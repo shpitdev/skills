@@ -15,6 +15,7 @@ After install, run:
 
 ```bash
 tabex setup
+tabex runtime status
 tabex session list
 ```
 
@@ -43,6 +44,32 @@ Recommended manual load flow:
 5. Click "Load unpacked" and select the `current` folder, or drag the `current`
    folder from Finder into the Chrome extensions page.
 6. If Tabex was already loaded, click Refresh on the existing Tabex extension.
+
+`tabex --help` may show `setup: configured` and an extension version even when
+Chrome has not loaded the unpacked extension. The decisive checks are:
+
+```bash
+tabex runtime status
+tabex session list
+```
+
+If they show `Source Connected: no`, `Connected: no`, or `Count: 0`, Tabex is not
+ready for browser interaction yet. Load or refresh the extension in the exact
+Chrome profile from `tabex browser config show`, then enable a tab from the
+extension popup or create a narrow auto-attach rule for the target host. Ask the
+user before changing browser extension state.
+
+For temporary smoke tests:
+
+```bash
+tabex auto-attach rule add --host example.com --include-subdomains
+tabex element click --open-url https://example.com --wait-timeout 15s --text "More information"
+tabex auto-attach rule list
+tabex auto-attach rule remove --rule-id <id>
+```
+
+`tabex session attach --wait` does not bypass that consent path; it only opens a
+tab and waits until the extension popup or an auto-attach rule enables it.
 
 ## Browser Profile
 
