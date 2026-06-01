@@ -28,6 +28,25 @@ bun run link:local
 This links `.claude/skills` and `.agents/skills` to the canonical `skills/`
 folder. `bun run check` validates those shims when they are present.
 
+## Codex Plugins
+
+Repo-managed Codex plugins live under `plugins/<name>` and are exposed through
+the local marketplace at `.agents/plugins/marketplace.json`.
+
+To add this checkout as a local Codex marketplace:
+
+```bash
+codex plugin marketplace add .
+```
+
+This makes `meshix@shpitdev-skills-local` visible to Codex. Disable or remove
+older personal Meshix plugin installs first if you want to avoid duplicate
+Meshix entries from different marketplaces.
+
+Plugin bundles are self-contained for installation, but the canonical skill
+source remains `skills/<name>`. `bun run check` validates plugin metadata,
+marketplace entries, MCP config files, assets, and bundled skill copies.
+
 ## Meshix
 
 [Meshix](https://meshix.app) turns natural-language CAD briefs into printable
@@ -52,10 +71,12 @@ planning.
 
 ```text
 AGENTS.md                   # editorial guidance for maintaining skills
+.agents/plugins/marketplace.json # repo-local Codex plugin marketplace
 skills/<name>/SKILL.md      # canonical hand-authored skill prompt
 skills/<name>/agents/       # optional agent UI metadata
 skills/<name>/assets/       # logos and other UI assets
 skills/<name>/references/   # optional setup/deep detail loaded on demand
+plugins/<name>/             # self-contained Codex plugin bundle
 scripts/validate-skills.mjs # skill metadata and local shim validation
 scripts/link-local-skills.mjs # local ignored Claude/.agents install shims
 ```

@@ -1,0 +1,16 @@
+interface:
+  display_name: "Meshix"
+  short_description: "Route and review Meshix CAD work"
+  icon_small: "./assets/logo.svg"
+  icon_large: "./assets/logo.svg"
+  brand_color: "#F9D544"
+  default_prompt: "Use $meshix to generate or review a Meshix CAD design."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "meshix"
+      description: "Meshix CAD generation MCP server"
+      transport: "streamable_http"
+      url: "https://meshix.app/mcp"
+policy:
+  allow_implicit_invocation: true

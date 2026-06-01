@@ -1,0 +1,20 @@
+{
+  "name": "shpitdev-skills-local",
+  "interface": {
+    "displayName": "ShpitDev Skills Local"
+  },
+  "plugins": [
+    {
+      "name": "meshix",
+      "source": {
+        "source": "local",
+        "path": "./plugins/meshix"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
