@@ -1,6 +1,10 @@
 .DS_Store
 node_modules/
-.agents/
+!.agents/
+.agents/*
+!.agents/plugins/
+.agents/plugins/*
+!.agents/plugins/marketplace.json
 .claude/
 .memory/*
 !.memory/.gitkeep

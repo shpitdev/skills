@@ -1,0 +1,41 @@
+{
+  "name": "meshix",
+  "version": "0.1.0",
+  "description": "Create, route, and review Meshix CAD designs from Codex.",
+  "author": {
+    "name": "ShpitDev",
+    "url": "https://meshix.app"
+  },
+  "homepage": "https://meshix.app/agents",
+  "repository": "https://github.com/shpitdev/skills",
+  "license": "MIT",
+  "keywords": [
+    "cad",
+    "meshix",
+    "mcp",
+    "3d-printing"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Meshix",
+    "shortDescription": "Generate and review Meshix CAD designs.",
+    "longDescription": "Meshix connects Codex to Meshix Studio and the Meshix MCP server for prompt-driven CAD generation, Gridfinity and Multiboard routing, artifact polling, and render review before a user prints anything.",
+    "developerName": "ShpitDev",
+    "category": "Productivity",
+    "capabilities": [
+      "CAD generation",
+      "MCP tools",
+      "Artifact review"
+    ],
+    "websiteURL": "https://meshix.app",
+    "brandColor": "#F9D544",
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg",
+    "defaultPrompt": [
+      "Generate a printable part with Meshix.",
+      "Review my Meshix design artifacts.",
+      "Set up Meshix MCP in Codex."
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "meshix": {
+      "type": "http",
+      "url": "https://meshix.app/mcp",
+      "note": "Meshix CAD generation MCP server. Uses OAuth on first connection and exposes account status, design creation, and design polling tools."
+    }
+  }
+}
