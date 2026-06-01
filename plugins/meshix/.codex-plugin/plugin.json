@@ -1,6 +1,6 @@
 {
   "name": "meshix",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Create, route, and review Meshix CAD designs from Codex.",
   "author": {
     "name": "SHPIT LLC",
@@ -21,8 +21,8 @@
     "capabilities": ["CAD generation", "MCP tools", "Artifact review"],
     "websiteURL": "https://meshix.app",
     "brandColor": "#F9D544",
-    "composerIcon": "./assets/logo.svg",
-    "logo": "./assets/logo.svg",
+    "composerIcon": "./assets/logo-large.png",
+    "logo": "./assets/logo-large.png",
     "defaultPrompt": [
       "Generate a printable part with Meshix.",
       "Review my Meshix design artifacts.",
