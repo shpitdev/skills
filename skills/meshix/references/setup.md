@@ -21,17 +21,23 @@ step is interactive sign-in or client auth setup.
   setup path.
 - If OAuth opens a browser, let the user complete the sign-in flow before
   retrying the MCP call.
-- If the agent already has Meshix MCP tools registered, prefer its live status or
-  account diagnostic tool before guessing.
+- If the agent already has Meshix MCP tools registered, call
+  `get_account_status` when present before guessing. It should confirm sign-in,
+  server health, and whether the generation backend is available.
 
 ## Long-Running Runs
 
-CAD generation can take minutes. Poll for status and artifacts. Stop only when
-the run is ready, needs attention, or errors.
+CAD generation can take a few minutes. Poll for status and artifacts every
+30-60 seconds. Stop on the top-level design state (`ready`, `needs_attention`,
+or a reported error). Treat run-level state changes, iteration counts, and
+progress labels as normal progress signals. If the agent blocks direct sleep
+commands, use its supported wait, monitor, or background task pattern instead of
+giving up.
 
-## Visual Review In Codex
+## Visual Review
 
 When a design has render images, save useful PNGs under `<cwd>/.memory/meshix/`
-if working in a repo. If there is no repo or `.memory` convention, use a temp
-directory. In Codex App, show the image with an absolute Markdown path so the
-user can inspect it inline.
+using filenames that include the design id and view, such as
+`<design-id>-isometric.png`. If there is no useful working directory, use a temp
+directory. If the agent's chat can display local files, show the image with an
+absolute Markdown path so the user can inspect it inline.

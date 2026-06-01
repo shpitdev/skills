@@ -17,6 +17,18 @@ npx skills add shpitdev/skills --skill meshix
 For agents that read local Agent Skills directly, copy or install the folder
 under `skills/<name>`.
 
+## Meshix
+
+[Meshix](https://meshix.app) turns natural-language CAD briefs into printable
+3D artifacts through Studio and the Meshix MCP server. First-time agent setup
+starts at [meshix.app/agents](https://meshix.app/agents).
+
+![USB-C cable label tag generated with Meshix](skills/meshix/assets/examples/usb-c-tag-isometric.png)
+
+The Meshix skill is tuned for practical CAD work: choosing the right generation
+surface, polling long-running jobs, returning the Studio run link, and reviewing
+renders before a user prints anything.
+
 ## Repository Layout
 
 ```text

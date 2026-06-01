@@ -14,11 +14,16 @@ Meshix-generated design.
 - For browser use, send the user to `https://meshix.app` or Meshix Studio.
 - For agent use, prefer the live Meshix MCP server when available. The public
   endpoint is `https://meshix.app/mcp`.
+- Before the first generation call in an MCP session, call `get_account_status`
+  when present to confirm sign-in and backend health.
 - If the MCP server is available, use its current tool schemas as the contract.
   Do not rely on remembered or copied schemas when the live tool metadata is
   present.
 - For first-time agent connection, OAuth, or MCP setup problems, read
   [setup.md](references/setup.md).
+- If the user provides an image or sketch as a CAD reference, read
+  [image-to-cad.md](references/image-to-cad.md). Meshix MCP currently accepts
+  text CAD briefs, so translate the image into physical geometry first.
 
 ## Routing
 
@@ -38,13 +43,21 @@ Meshix-generated design.
    context when those affect the result.
 3. Use the narrowest Meshix surface that fits the request. If the request is
    under-specified, make one short clarification pass before generating.
-4. Expect generation to take a while. Poll until the design is ready, needs
-   attention, or errors; do not treat a long-running job as failed too early.
+4. Expect generation to take a few minutes. Poll the design status every 30-60
+   seconds, and stop on the top-level design state: `ready`,
+   `needs_attention`, or a reported error. Treat run-level state changes,
+   iterations, and progress labels as normal progress signals. If the agent
+   blocks direct sleep commands, use its supported wait, monitor, or background
+   task pattern instead of giving up.
 5. After generation, review the resulting artifacts for obvious fit,
    orientation, thickness, access, and printability issues.
-6. When reviewing render images in Codex, save useful PNGs under
-   `<cwd>/.memory/meshix/` when working in a repo, or a temp directory otherwise,
-   then show them with an absolute Markdown image path.
+6. Return the Studio design/run URL, not just the design id, so the user can
+   inspect and continue the model interactively.
+7. When reviewing render images, save useful PNGs under
+   `<cwd>/.memory/meshix/` using filenames that include the design id and view,
+   such as `<design-id>-isometric.png`, then show them with an absolute Markdown
+   image path. Use a temp directory only when there is no useful working
+   directory.
 
 ## Review Standard
 
@@ -53,3 +66,8 @@ part is load-rated, electrically safe, food safe, printer-tuned, or physically
 verified unless the user supplies separate evidence. Be especially careful with
 parts that carry weight, touch heat, involve batteries, or must mate tightly with
 real hardware.
+
+Render previews are CAD inspection views, not product photography. Isometric,
+top, and bottom renders may show the model from different sides; apparent text
+direction or orientation issues should be checked against the Studio run link or
+alternate views before calling them defects.
