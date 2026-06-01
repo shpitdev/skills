@@ -666,6 +666,10 @@ async function validateIconAsset(skillName, key, file) {
     return;
   }
 
+  if (/<filter\b|<fe[A-Z][A-Za-z]*\b/u.test(text)) {
+    failures.push(`${skillName}: ${key} SVG must avoid filters and filter primitives for host icon compatibility`);
+  }
+
   const viewBox = text.match(/\bviewBox=["'](?<viewBox>[^"']+)["']/);
   if (!viewBox?.groups?.viewBox) {
     failures.push(`${skillName}: ${key} SVG must include a viewBox`);
