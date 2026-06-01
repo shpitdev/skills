@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readdir, readFile, stat } from "node:fs/promises";
+import { lstat, readdir, readFile, readlink, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,13 +7,31 @@ import { parse } from "yaml";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const skillsRoot = path.join(repoRoot, "skills");
+const optionalInstallShims = [
+  {
+    label: ".agents/skills",
+    root: path.join(repoRoot, ".agents", "skills"),
+    target: skillsRoot,
+  },
+  {
+    label: ".claude/skills",
+    root: path.join(repoRoot, ".claude", "skills"),
+    target: skillsRoot,
+  },
+];
 const allowedFrontmatterKeys = new Set(["name", "description"]);
 const maxIconBytes = 256 * 1024;
 
 const failures = [];
+const validatedInstallShims = [];
 
-for (const skillName of await listSkillNames()) {
+const skillNames = await listSkillNames(skillsRoot);
+for (const skillName of skillNames) {
   await validateSkill(skillName);
+}
+
+for (const shim of optionalInstallShims) {
+  await validateInstallShim(shim, skillNames);
 }
 
 if (failures.length > 0) {
@@ -21,7 +39,9 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Validated skills.");
+const installShimSummary =
+  validatedInstallShims.length > 0 ? ` and local install shims (${validatedInstallShims.join(", ")})` : "";
+console.log(`Validated skills${installShimSummary}.`);
 
 async function validateSkill(skillName) {
   const skillDir = path.join(skillsRoot, skillName);
@@ -146,6 +166,41 @@ async function validateOpenAiYaml(skillName, file) {
   }
 }
 
+async function validateInstallShim(shim, canonicalSkillNames) {
+  const entry = await safeLstat(shim.root);
+  if (!entry) {
+    return;
+  }
+
+  if (!entry.isSymbolicLink()) {
+    failures.push(`${shim.label}: must be a symlink to skills/; run bun run link:local`);
+    return;
+  }
+
+  const linkTarget = await readlink(shim.root);
+  const resolvedTarget = path.resolve(path.dirname(shim.root), linkTarget);
+  if (resolvedTarget !== shim.target) {
+    failures.push(`${shim.label}: points to ${linkTarget}, expected ${path.relative(path.dirname(shim.root), shim.target)}`);
+    return;
+  }
+
+  const shimSkillNames = await listSkillNames(shim.root);
+  const missingSkillNames = canonicalSkillNames.filter((skillName) => !shimSkillNames.includes(skillName));
+  if (missingSkillNames.length > 0) {
+    failures.push(`${shim.label}: missing skill directories: ${missingSkillNames.join(", ")}`);
+    return;
+  }
+
+  for (const skillName of canonicalSkillNames) {
+    const skillFile = path.join(shim.root, skillName, "SKILL.md");
+    if (!existsSync(skillFile)) {
+      failures.push(`${shim.label}: ${skillName} is missing SKILL.md`);
+    }
+  }
+
+  validatedInstallShims.push(shim.label);
+}
+
 async function validateIconAsset(skillName, key, file) {
   const ext = path.extname(file).toLowerCase();
   const asset = await readFile(file);
@@ -197,13 +252,13 @@ async function validateIconAsset(skillName, key, file) {
   }
 }
 
-async function listSkillNames() {
-  if (!existsSync(skillsRoot)) {
-    failures.push("missing skills directory");
+async function listSkillNames(root) {
+  if (!existsSync(root)) {
+    failures.push(`missing skills directory: ${path.relative(repoRoot, root)}`);
     return [];
   }
 
-  const entries = await readdir(skillsRoot, { withFileTypes: true });
+  const entries = await readdir(root, { withFileTypes: true });
   const names = [];
 
   for (const entry of entries) {
@@ -211,7 +266,7 @@ async function listSkillNames() {
       continue;
     }
 
-    const entryStat = await stat(path.join(skillsRoot, entry.name));
+    const entryStat = await stat(path.join(root, entry.name));
     if (entryStat.isDirectory()) {
       names.push(entry.name);
     }
@@ -222,4 +277,16 @@ async function listSkillNames() {
 
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+async function safeLstat(file) {
+  try {
+    return await lstat(file);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return null;
+    }
+
+    throw error;
+  }
 }
