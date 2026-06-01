@@ -34,10 +34,10 @@ progress labels as normal progress signals. If the agent blocks direct sleep
 commands, use its supported wait, monitor, or background task pattern instead of
 giving up.
 
-## Visual Review In Codex
+## Visual Review
 
 When a design has render images, save useful PNGs under `<cwd>/.memory/meshix/`
 using filenames that include the design id and view, such as
 `<design-id>-isometric.png`. If there is no useful working directory, use a temp
-directory. In Codex App, show the image with an absolute Markdown path so the
-user can inspect it inline.
+directory. If the agent's chat can display local files, show the image with an
+absolute Markdown path so the user can inspect it inline.

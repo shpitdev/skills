@@ -21,6 +21,9 @@ Meshix-generated design.
   present.
 - For first-time agent connection, OAuth, or MCP setup problems, read
   [setup.md](references/setup.md).
+- If the user provides an image or sketch as a CAD reference, read
+  [image-to-cad.md](references/image-to-cad.md). Meshix MCP currently accepts
+  text CAD briefs, so translate the image into physical geometry first.
 
 ## Routing
 
@@ -48,7 +51,9 @@ Meshix-generated design.
    task pattern instead of giving up.
 5. After generation, review the resulting artifacts for obvious fit,
    orientation, thickness, access, and printability issues.
-6. When reviewing render images in Codex, save useful PNGs under
+6. Return the Studio design/run URL, not just the design id, so the user can
+   inspect and continue the model interactively.
+7. When reviewing render images, save useful PNGs under
    `<cwd>/.memory/meshix/` using filenames that include the design id and view,
    such as `<design-id>-isometric.png`, then show them with an absolute Markdown
    image path. Use a temp directory only when there is no useful working
@@ -61,3 +66,8 @@ part is load-rated, electrically safe, food safe, printer-tuned, or physically
 verified unless the user supplies separate evidence. Be especially careful with
 parts that carry weight, touch heat, involve batteries, or must mate tightly with
 real hardware.
+
+Render previews are CAD inspection views, not product photography. Isometric,
+top, and bottom renders may show the model from different sides; apparent text
+direction or orientation issues should be checked against the Studio run link or
+alternate views before calling them defects.
