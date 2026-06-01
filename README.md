@@ -12,10 +12,21 @@ Install a skill with a compatible skills installer:
 ```bash
 npx skills add shpitdev/skills --skill tabex
 npx skills add shpitdev/skills --skill meshix
+npx skills add shpitdev/skills --skill slant4d
 ```
 
 For agents that read local Agent Skills directly, copy or install the folder
 under `skills/<name>`.
+
+For local Claude Code/project validation without copying skills into your home
+directory, create ignored install shims:
+
+```bash
+bun run link:local
+```
+
+This links `.claude/skills` and `.agents/skills` to the canonical `skills/`
+folder. `bun run check` validates those shims when they are present.
 
 ## Meshix
 
@@ -29,6 +40,14 @@ The Meshix skill is tuned for practical CAD work: choosing the right generation
 surface, polling long-running jobs, returning the Studio run link, and reviewing
 renders before a user prints anything.
 
+## Slant4D
+
+[Slant4D](https://slant4d.com) is a catalog-backed product for discovering,
+customizing, generating, and reviewing printable organizer inserts. The skill is
+tuned for market-derived corpus triage, upstream catalog resolution, operator
+MCP/API sync, source-part readiness, insert bundle readiness, and lifecycle proof
+planning.
+
 ## Repository Layout
 
 ```text
@@ -37,7 +56,8 @@ skills/<name>/SKILL.md      # canonical hand-authored skill prompt
 skills/<name>/agents/       # optional agent UI metadata
 skills/<name>/assets/       # logos and other UI assets
 skills/<name>/references/   # optional setup/deep detail loaded on demand
-scripts/validate-skills.mjs # syntax validation only
+scripts/validate-skills.mjs # skill metadata and local shim validation
+scripts/link-local-skills.mjs # local ignored Claude/.agents install shims
 ```
 
 ## Check
@@ -47,8 +67,8 @@ bun run check
 ```
 
 The check validates required skill files, frontmatter shape, basic YAML-like
-syntax, and optional `agents/openai.yaml` metadata. It does not generate or
-rewrite skills.
+syntax, optional `agents/openai.yaml` metadata, and local install shims when
+present. It does not generate or rewrite skills.
 
 ## Design Rules
 

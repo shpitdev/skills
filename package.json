@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "check": "node scripts/validate-skills.mjs",
+    "link:local": "node scripts/link-local-skills.mjs",
     "prepare": "husky"
   },
   "packageManager": "bun@1.3.14",
