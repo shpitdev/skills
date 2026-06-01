@@ -1,0 +1,9 @@
+interface:
+  display_name: "Tabex"
+  short_description: "Use Tabex browser capture workflows"
+  icon_small: "./assets/logo.svg"
+  icon_large: "./assets/logo.svg"
+  brand_color: "#D19B55"
+  default_prompt: "Use $tabex to inspect a browser session or capture run."
+policy:
+  allow_implicit_invocation: true
