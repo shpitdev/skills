@@ -28,24 +28,34 @@ bun run link:local
 This links `.claude/skills` and `.agents/skills` to the canonical `skills/`
 folder. `bun run check` validates those shims when they are present.
 
-## Codex Plugins
+## Agent Plugins
 
-Repo-managed Codex plugins live under `plugins/<name>` and are exposed through
-the local marketplace at `.agents/plugins/marketplace.json`.
+Repo-managed plugins live under `plugins/<name>` and are exposed through
+marketplace manifests for each harness. Prefer installing from the GitHub
+marketplace source for normal use.
 
-To add this checkout as a local Codex marketplace:
+Install Meshix for Codex:
 
 ```bash
-codex plugin marketplace add .
+codex plugin marketplace add shpitdev/skills
+codex plugin add meshix@shpitdev-skills
+codex mcp login meshix
 ```
 
-This makes `meshix@shpitdev-skills-local` visible to Codex. Disable or remove
-older personal Meshix plugin installs first if you want to avoid duplicate
-Meshix entries from different marketplaces.
+Install Meshix for Claude Code:
 
-Plugin bundles are self-contained for installation, but the canonical skill
-source remains `skills/<name>`. `bun run check` validates plugin metadata,
-marketplace entries, MCP config files, assets, and bundled skill copies.
+```bash
+claude plugin marketplace add shpitdev/skills
+claude plugin install meshix@shpitdev-skills
+```
+
+See [Plugin Installation](docs/plugin-installation.md) for local development,
+updates, duplicate cleanup, and MCP OAuth notes.
+
+Plugin bundles are self-contained because Codex plugin archives reject skill and
+asset symlinks that point outside the plugin directory. The canonical skill
+source remains `skills/<name>`, and `bun run check` validates that bundled skill
+copies stay byte-for-byte in sync with the canonical source.
 
 ## Meshix
 
@@ -71,14 +81,16 @@ planning.
 
 ```text
 AGENTS.md                   # editorial guidance for maintaining skills
-.agents/plugins/marketplace.json # repo-local Codex plugin marketplace
+.agents/plugins/marketplace.json # Codex plugin marketplace
+.claude-plugin/marketplace.json  # Claude Code plugin marketplace
 skills/<name>/SKILL.md      # canonical hand-authored skill prompt
 skills/<name>/agents/       # optional agent UI metadata
 skills/<name>/assets/       # logos and other UI assets
 skills/<name>/references/   # optional setup/deep detail loaded on demand
-plugins/<name>/             # self-contained Codex plugin bundle
-scripts/validate-skills.mjs # skill metadata and local shim validation
+plugins/<name>/             # repo-contained plugin bundle
+scripts/validate-skills.mjs # skill, marketplace, and plugin validation
 scripts/link-local-skills.mjs # local ignored Claude/.agents install shims
+docs/plugin-installation.md # plugin install, update, and MCP auth guide
 ```
 
 ## Check

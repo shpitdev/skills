@@ -1,5 +1,6 @@
 {
   "name": "@shpitdev/skills",
+  "author": "SHPIT LLC (https://shpit.dev)",
   "private": true,
   "type": "module",
   "scripts": {

@@ -1,0 +1,19 @@
+{
+  "name": "meshix",
+  "version": "0.1.0",
+  "description": "Create, route, and review Meshix CAD designs through Studio and the Meshix MCP server.",
+  "author": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "homepage": "https://meshix.app/agents",
+  "repository": "https://github.com/shpitdev/skills",
+  "license": "MIT",
+  "keywords": ["cad", "meshix", "mcp", "3d-printing"],
+  "mcpServers": {
+    "meshix": {
+      "type": "http",
+      "url": "https://meshix.app/mcp"
+    }
+  }
+}

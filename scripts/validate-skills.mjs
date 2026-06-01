@@ -9,6 +9,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 const skillsRoot = path.join(repoRoot, "skills");
 const pluginsRoot = path.join(repoRoot, "plugins");
 const marketplacePath = path.join(repoRoot, ".agents", "plugins", "marketplace.json");
+const claudeMarketplacePath = path.join(repoRoot, ".claude-plugin", "marketplace.json");
 const optionalInstallShims = [
   {
     label: ".agents/skills",
@@ -29,6 +30,7 @@ const maxIconBytes = 256 * 1024;
 const failures = [];
 const validatedInstallShims = [];
 const validatedPluginNames = [];
+const validatedClaudePluginNames = [];
 
 const skillNames = await listSkillNames(skillsRoot);
 for (const skillName of skillNames) {
@@ -40,6 +42,7 @@ for (const shim of optionalInstallShims) {
 }
 
 await validatePluginMarketplace();
+await validateClaudePluginMarketplace();
 
 if (failures.length > 0) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
@@ -48,8 +51,10 @@ if (failures.length > 0) {
 
 const installShimSummary =
   validatedInstallShims.length > 0 ? ` and local install shims (${validatedInstallShims.join(", ")})` : "";
-const pluginSummary = validatedPluginNames.length > 0 ? ` and plugins (${validatedPluginNames.join(", ")})` : "";
-console.log(`Validated skills${installShimSummary}${pluginSummary}.`);
+const pluginSummary = validatedPluginNames.length > 0 ? `, Codex plugins (${validatedPluginNames.join(", ")})` : "";
+const claudePluginSummary =
+  validatedClaudePluginNames.length > 0 ? `, and Claude plugins (${validatedClaudePluginNames.join(", ")})` : "";
+console.log(`Validated skills${installShimSummary}${pluginSummary}${claudePluginSummary}.`);
 
 async function validateSkill(root, skillName, label) {
   const skillDir = path.join(root, skillName);
@@ -253,6 +258,78 @@ async function validatePluginMarketplace() {
   }
 }
 
+async function validateClaudePluginMarketplace() {
+  if (!existsSync(claudeMarketplacePath)) {
+    return;
+  }
+
+  const marketplace = await readJson(".claude-plugin/marketplace.json", claudeMarketplacePath);
+  if (!marketplace) {
+    return;
+  }
+
+  if (!isNonEmptyString(marketplace.name)) {
+    failures.push(".claude-plugin/marketplace.json: missing marketplace name");
+  }
+
+  if (!isNonEmptyString(marketplace.description)) {
+    failures.push(".claude-plugin/marketplace.json: missing marketplace description");
+  }
+
+  if (!isPlainObject(marketplace.owner) || !isNonEmptyString(marketplace.owner.name)) {
+    failures.push(".claude-plugin/marketplace.json: missing owner.name");
+  }
+
+  if (!Array.isArray(marketplace.plugins)) {
+    failures.push(".claude-plugin/marketplace.json: plugins must be an array");
+    return;
+  }
+
+  const pluginNames = new Set();
+  for (const [index, entry] of marketplace.plugins.entries()) {
+    const label = `.claude-plugin/marketplace.json: plugins[${index}]`;
+    if (!isPlainObject(entry)) {
+      failures.push(`${label} must be an object`);
+      continue;
+    }
+
+    if (!isPluginName(entry.name)) {
+      failures.push(`${label}.name must be a lower-case plugin name`);
+      continue;
+    }
+
+    if (pluginNames.has(entry.name)) {
+      failures.push(`${label}.name duplicates ${entry.name}`);
+    }
+    pluginNames.add(entry.name);
+
+    if (!isNonEmptyString(entry.description)) {
+      failures.push(`${label}.description must be a non-empty string`);
+    }
+
+    if (!isPlainObject(entry.author) || !isNonEmptyString(entry.author.name)) {
+      failures.push(`${label}.author.name is required`);
+    }
+
+    if (!isNonEmptyString(entry.category)) {
+      failures.push(`${label}.category must be a non-empty string`);
+    }
+
+    const expectedSourcePath = `./plugins/${entry.name}`;
+    if (entry.source !== expectedSourcePath) {
+      failures.push(`${label}.source must be ${expectedSourcePath}`);
+    }
+
+    const pluginDir = path.join(repoRoot, "plugins", entry.name);
+    if (!existsSync(pluginDir)) {
+      failures.push(`${entry.name}: Claude marketplace entry points to missing plugin directory`);
+      continue;
+    }
+
+    await validateClaudePlugin(entry.name, pluginDir);
+  }
+}
+
 async function validatePlugin(pluginName, pluginDir) {
   const label = `plugin:${pluginName}`;
   const manifestPath = path.join(pluginDir, ".codex-plugin", "plugin.json");
@@ -289,12 +366,61 @@ async function validatePlugin(pluginName, pluginDir) {
     await validatePluginSkills(pluginName, pluginDir, manifest.skills);
   }
 
-  if (manifest.mcpServers) {
+  if (isNonEmptyString(manifest.mcpServers)) {
     await validatePluginMcp(pluginName, pluginDir, manifest.mcpServers);
   }
 
   await validatePluginInterface(pluginName, pluginDir, manifest.interface);
   validatedPluginNames.push(pluginName);
+}
+
+async function validateClaudePlugin(pluginName, pluginDir) {
+  const label = `claude-plugin:${pluginName}`;
+  const manifestPath = path.join(pluginDir, ".claude-plugin", "plugin.json");
+  if (!existsSync(manifestPath)) {
+    failures.push(`${label}: missing .claude-plugin/plugin.json`);
+    return;
+  }
+
+  const manifest = await readJson(`${label}: .claude-plugin/plugin.json`, manifestPath);
+  if (!manifest) {
+    return;
+  }
+
+  if (manifest.name !== pluginName) {
+    failures.push(`${label}: manifest name must match directory name`);
+  }
+
+  if (!isSemver(manifest.version)) {
+    failures.push(`${label}: version must be semver`);
+  }
+
+  if (!isNonEmptyString(manifest.description) || manifest.description.length < 20) {
+    failures.push(`${label}: description must describe the plugin`);
+  }
+
+  if (!isPlainObject(manifest.author) || !isNonEmptyString(manifest.author.name)) {
+    failures.push(`${label}: author.name is required`);
+  }
+
+  if (isNonEmptyString(manifest.mcpServers)) {
+    await validatePluginPath(pluginDir, label, manifest.mcpServers, "mcpServers");
+  } else if (manifest.mcpServers && !isPlainObject(manifest.mcpServers)) {
+    failures.push(`${label}: mcpServers must be a relative path or inline MCP server object`);
+  }
+
+  const defaultSkillsRoot = path.join(pluginDir, "skills");
+  if (existsSync(defaultSkillsRoot)) {
+    await validatePluginSkills(pluginName, pluginDir, "./skills/");
+  }
+
+  if (isNonEmptyString(manifest.mcpServers)) {
+    await validateClaudePluginMcp(pluginName, pluginDir, manifest.mcpServers);
+  } else if (isPlainObject(manifest.mcpServers)) {
+    validateClaudeMcpServerMap(pluginName, ".claude-plugin/plugin.json mcpServers", manifest.mcpServers);
+  }
+
+  validatedClaudePluginNames.push(pluginName);
 }
 
 async function validatePluginPath(pluginDir, label, relativePath, fieldName) {
@@ -356,6 +482,31 @@ async function validatePluginMcp(pluginName, pluginDir, relativePath) {
 
   if (Object.keys(mcpConfig.mcpServers).length === 0) {
     failures.push(`plugin:${pluginName}: ${relativePath} must declare at least one MCP server`);
+  }
+}
+
+async function validateClaudePluginMcp(pluginName, pluginDir, relativePath) {
+  const mcpPath = path.resolve(pluginDir, relativePath);
+  const mcpConfig = await readJson(`claude-plugin:${pluginName}: ${relativePath}`, mcpPath);
+  if (!mcpConfig) {
+    return;
+  }
+
+  if (!isPlainObject(mcpConfig)) {
+    failures.push(`claude-plugin:${pluginName}: ${relativePath} must contain an MCP server object`);
+    return;
+  }
+
+  validateClaudeMcpServerMap(pluginName, relativePath, mcpConfig);
+}
+
+function validateClaudeMcpServerMap(pluginName, location, mcpConfig) {
+  if (Object.keys(mcpConfig).length === 0) {
+    failures.push(`claude-plugin:${pluginName}: ${location} must declare at least one MCP server`);
+  }
+
+  if ("mcpServers" in mcpConfig) {
+    failures.push(`claude-plugin:${pluginName}: ${location} should use Claude's direct MCP server map, not a mcpServers wrapper`);
   }
 }
 
@@ -450,9 +601,10 @@ async function listFilesRecursive(root, prefix = "") {
   for (const entry of entries) {
     const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
     const fullPath = path.join(root, entry.name);
-    if (entry.isDirectory()) {
+    const entryStat = await stat(fullPath);
+    if (entryStat.isDirectory()) {
       files.push(...(await listFilesRecursive(fullPath, relativePath)));
-    } else if (entry.isFile()) {
+    } else if (entryStat.isFile()) {
       files.push(relativePath);
     }
   }
@@ -556,10 +708,6 @@ async function listSkillNames(root) {
   const names = [];
 
   for (const entry of entries) {
-    if (!entry.isDirectory()) {
-      continue;
-    }
-
     const entryStat = await stat(path.join(root, entry.name));
     if (entryStat.isDirectory()) {
       names.push(entry.name);

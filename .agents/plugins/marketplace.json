@@ -1,7 +1,7 @@
 {
-  "name": "shpitdev-skills-local",
+  "name": "shpitdev-skills",
   "interface": {
-    "displayName": "ShpitDev Skills Local"
+    "displayName": "ShpitDev Skills"
   },
   "plugins": [
     {

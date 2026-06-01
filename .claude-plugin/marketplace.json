@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "shpitdev-skills",
+  "description": "Agent skills and plugins for ShpitDev products.",
+  "owner": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "plugins": [
+    {
+      "name": "meshix",
+      "description": "Create, route, and review Meshix CAD designs through Studio and the Meshix MCP server.",
+      "author": {
+        "name": "SHPIT LLC",
+        "url": "https://shpit.dev"
+      },
+      "category": "development",
+      "source": "./plugins/meshix",
+      "homepage": "https://meshix.app/agents"
+    }
+  ]
+}
