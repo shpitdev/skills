@@ -34,7 +34,13 @@ Repo-managed plugins live under `plugins/<name>` and are exposed through
 marketplace manifests for each harness. Prefer installing from the GitHub
 marketplace source for normal use.
 
-Install plugins for Codex:
+### Codex Plugins
+
+Use the GitHub marketplace source for normal installs. This creates a
+Git-backed marketplace named `shpitdev-skills`, which is the only form that
+`codex plugin marketplace upgrade shpitdev-skills` can refresh.
+
+Install all Codex plugins:
 
 ```bash
 codex plugin marketplace add shpitdev/skills
@@ -44,6 +50,45 @@ codex plugin add slant4d@shpitdev-skills
 codex mcp login meshix
 codex mcp login slant4d
 ```
+
+Update an existing Codex install:
+
+```bash
+codex plugin marketplace upgrade shpitdev-skills
+codex plugin remove tabex@shpitdev-skills
+codex plugin add tabex@shpitdev-skills
+```
+
+Repeat the remove/add pair for `meshix` or `slant4d` when their bundled plugin
+version changes. Meshix and Slant4D may also need `codex mcp login <name>` after
+install because they register OAuth-backed MCP servers.
+
+If `marketplace upgrade` says `shpitdev-skills` is not configured as a Git
+marketplace, the marketplace was added from a local path or stale snapshot. Fix
+it by replacing the marketplace with the Git-backed source:
+
+```bash
+codex plugin marketplace remove shpitdev-skills
+codex plugin marketplace add shpitdev/skills
+codex plugin add tabex@shpitdev-skills
+```
+
+Check the configured source and installed versions with:
+
+```bash
+codex plugin marketplace list
+codex plugin list --marketplace shpitdev-skills
+```
+
+Local checkout installs are only for PR validation:
+
+```bash
+codex plugin marketplace add .
+codex plugin add tabex@shpitdev-skills
+```
+
+Do not expect `codex plugin marketplace upgrade shpitdev-skills` to work for a
+local checkout marketplace; switch back to `shpitdev/skills` for normal use.
 
 Install Meshix for Claude Code:
 
