@@ -1,0 +1,31 @@
+{
+  "name": "tabex",
+  "version": "0.1.0",
+  "description": "Inspect live browser sessions, run page actions, and preserve browser evidence with Tabex.",
+  "author": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "homepage": "https://tabex.dev",
+  "repository": "https://github.com/shpitdev/skills",
+  "license": "MIT",
+  "keywords": ["browser", "tabex", "automation", "evidence"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Tabex",
+    "shortDescription": "Inspect browser sessions with Tabex.",
+    "longDescription": "Tabex gives Codex operational guidance for using the Tabex CLI to inspect real browser sessions, select pages and elements, run actions or JavaScript, and keep raw browser evidence intact.",
+    "developerName": "SHPIT LLC",
+    "category": "Engineering",
+    "capabilities": ["Browser inspection", "CLI workflows", "Evidence capture"],
+    "websiteURL": "https://tabex.dev",
+    "brandColor": "#D19B55",
+    "composerIcon": "./assets/logo-large.png",
+    "logo": "./assets/logo-large.png",
+    "defaultPrompt": [
+      "Inspect a browser session with Tabex.",
+      "Capture evidence from a live page with Tabex.",
+      "Set up Tabex for browser inspection."
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+interface:
+  display_name: "Slant4D"
+  short_description: "Slant4D operator and corpus workflows"
+  icon_small: "./assets/logo.svg"
+  icon_large: "./assets/logo-large.png"
+  brand_color: "#FD00FC"
+  default_prompt: "Use $slant4d to resolve market insert evidence against Slant4D catalog, operator sync, source-part readiness, and lifecycle proof state."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "slant4d"
+      description: "Slant4D operator MCP server"
+      transport: "streamable_http"
+      url: "https://agents.slant4d.com/mcp"
