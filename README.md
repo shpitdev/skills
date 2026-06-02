@@ -34,12 +34,15 @@ Repo-managed plugins live under `plugins/<name>` and are exposed through
 marketplace manifests for each harness. Prefer installing from the GitHub
 marketplace source for normal use.
 
-Install Meshix for Codex:
+Install plugins for Codex:
 
 ```bash
 codex plugin marketplace add shpitdev/skills
 codex plugin add meshix@shpitdev-skills
+codex plugin add tabex@shpitdev-skills
+codex plugin add slant4d@shpitdev-skills
 codex mcp login meshix
+codex mcp login slant4d
 ```
 
 Install Meshix for Claude Code:
@@ -89,6 +92,13 @@ customizing, generating, and reviewing printable organizer inserts. The skill is
 tuned for market-derived corpus triage, upstream catalog resolution, operator
 MCP/API sync, source-part readiness, insert bundle readiness, and lifecycle proof
 planning.
+
+## Tabex
+
+[Tabex](https://tabex.dev) is a browser workbench CLI for inspecting live
+browser sessions, running page actions or JavaScript, and preserving browser
+evidence. The skill is tuned for real session checks, extension setup, targeted
+page actions, and capture workflows.
 
 ## Repository Layout
 

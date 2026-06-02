@@ -15,6 +15,30 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Productivity"
+    },
+    {
+      "name": "tabex",
+      "source": {
+        "source": "local",
+        "path": "./plugins/tabex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Engineering"
+    },
+    {
+      "name": "slant4d",
+      "source": {
+        "source": "local",
+        "path": "./plugins/slant4d"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }

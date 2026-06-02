@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "slant4d": {
+      "type": "http",
+      "url": "https://agents.slant4d.com/mcp",
+      "note": "Slant4D operator MCP server. Uses Cloudflare Access OAuth on first connection and exposes catalog, corpus, inventory, and lifecycle proof tools when authenticated."
+    }
+  }
+}
