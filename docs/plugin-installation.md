@@ -103,6 +103,26 @@ the durable Claude plugin settings in the machine configuration:
 claude plugin install meshix@shpitdev-skills --scope local
 ```
 
+### Claude.ai and Claude Desktop
+
+Claude.ai and Claude Desktop do not consume the Claude Code plugin manifest.
+Use Claude's remote MCP custom connector flow instead:
+
+1. Open Claude connector settings.
+2. Add a custom connector named `Meshix`.
+3. Set the connector URL to `https://meshix.app/mcp`.
+4. Complete the Meshix OAuth flow when Claude prompts for authentication.
+
+Shortcut link:
+[Add Meshix custom connector](https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Meshix&connectorUrl=https%3A%2F%2Fmeshix.app%2Fmcp).
+
+This path is the right one for Claude.ai and Claude Desktop because the
+connection is hosted by Claude and reaches Meshix over public HTTPS. The
+connector can call Meshix MCP tools, but current Claude connector behavior does
+not provide host-side polling, MCP subscriptions, or webhook delivery. For
+long-running Meshix jobs, ask Claude to run the appropriate follow-up
+status/tool call after generation starts.
+
 ## Local Development
 
 Use local marketplace installs only while editing this checkout:

@@ -49,6 +49,19 @@ claude plugin marketplace add shpitdev/skills
 claude plugin install meshix@shpitdev-skills
 ```
 
+Connect Meshix in Claude.ai or Claude Desktop:
+
+1. Open Claude's connector settings.
+2. Add a custom connector named `Meshix`.
+3. Use `https://meshix.app/mcp` as the connector URL.
+
+Shortcut: [Add Meshix custom connector](https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Meshix&connectorUrl=https%3A%2F%2Fmeshix.app%2Fmcp).
+
+This remote connector works for direct Meshix MCP calls in Claude.ai and Claude
+Desktop. Current Claude connector behavior does not provide host-side polling,
+subscriptions, or webhook delivery, so long-running Meshix jobs must be checked
+with follow-up status/tool calls.
+
 See [Plugin Installation](docs/plugin-installation.md) for local development,
 updates, duplicate cleanup, and MCP OAuth notes.
 
