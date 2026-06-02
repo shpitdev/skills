@@ -1,7 +1,7 @@
 {
   "name": "shpitdev-skills",
   "interface": {
-    "displayName": "ShpitDev Skills"
+    "displayName": "ShpitDev Plugins"
   },
   "plugins": [
     {
