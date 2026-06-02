@@ -2,7 +2,7 @@ interface:
   display_name: "Slant4D"
   short_description: "Slant4D operator and corpus workflows"
   icon_small: "./assets/logo.svg"
-  icon_large: "./assets/logo.svg"
+  icon_large: "./assets/logo-large.png"
   brand_color: "#FD00FC"
   default_prompt: "Use $slant4d to resolve market insert evidence against Slant4D catalog, operator sync, source-part readiness, and lifecycle proof state."
 dependencies:

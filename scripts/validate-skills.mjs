@@ -175,7 +175,9 @@ async function validateOpenAiYaml(label, skillName, file) {
       continue;
     }
 
-    await validateIconAsset(label, key, iconPath);
+    await validateIconAsset(label, key, iconPath, {
+      expectedExt: key === "icon_large" ? ".png" : ".svg",
+    });
   }
 }
 
@@ -560,7 +562,7 @@ async function validatePluginInterface(pluginName, pluginDir, ui) {
       continue;
     }
 
-    await validateIconAsset(`plugin:${pluginName}`, key, iconPath);
+    await validateIconAsset(`plugin:${pluginName}`, key, iconPath, { expectedExt: ".png" });
   }
 }
 
@@ -647,7 +649,7 @@ async function validateInstallShim(shim, canonicalSkillNames) {
   validatedInstallShims.push(shim.label);
 }
 
-async function validateIconAsset(skillName, key, file) {
+async function validateIconAsset(skillName, key, file, options = {}) {
   const ext = path.extname(file).toLowerCase();
   const asset = await readFile(file);
 
@@ -655,8 +657,18 @@ async function validateIconAsset(skillName, key, file) {
     failures.push(`${skillName}: ${key} asset is too large (${asset.byteLength} bytes)`);
   }
 
+  if (options.expectedExt && ext !== options.expectedExt) {
+    failures.push(`${skillName}: ${key} should point to a ${options.expectedExt.slice(1).toUpperCase()} asset`);
+    return;
+  }
+
+  if (ext === ".png") {
+    validatePngIconAsset(skillName, key, asset);
+    return;
+  }
+
   if (ext !== ".svg") {
-    failures.push(`${skillName}: ${key} should point to an SVG asset`);
+    failures.push(`${skillName}: ${key} should point to an SVG or PNG asset`);
     return;
   }
 
@@ -700,6 +712,45 @@ async function validateIconAsset(skillName, key, file) {
       failures.push(`${skillName}: ${key} SVG width and height must match`);
     }
   }
+}
+
+function validatePngIconAsset(skillName, key, asset) {
+  const dimensions = readPngDimensions(asset);
+  if (!dimensions) {
+    failures.push(`${skillName}: ${key} asset is not valid PNG data`);
+    return;
+  }
+
+  const { width, height, bitDepth } = dimensions;
+  if (width !== height) {
+    failures.push(`${skillName}: ${key} PNG dimensions must be square`);
+  }
+
+  if (width < 32 || height < 32) {
+    failures.push(`${skillName}: ${key} PNG dimensions must be at least 32x32`);
+  }
+
+  if (bitDepth !== 8) {
+    failures.push(`${skillName}: ${key} PNG must use 8-bit color depth`);
+  }
+}
+
+function readPngDimensions(asset) {
+  const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (asset.byteLength < 29 || !signature.every((byte, index) => asset[index] === byte)) {
+    return null;
+  }
+
+  if (asset.toString("ascii", 12, 16) !== "IHDR") {
+    return null;
+  }
+
+  return {
+    width: asset.readUInt32BE(16),
+    height: asset.readUInt32BE(20),
+    bitDepth: asset[24],
+    colorType: asset[25],
+  };
 }
 
 async function listSkillNames(root) {
