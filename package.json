@@ -9,7 +9,7 @@
   "scripts": {
     "check": "node scripts/validate-skills.mjs",
     "link:local": "node scripts/link-local-skills.mjs",
-    "prepare": "husky",
+    "prepare": "node scripts/prepare.mjs",
     "test:meshix-pi": "bun ./extensions/meshix/test.ts"
   },
   "pi": {
