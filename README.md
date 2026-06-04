@@ -145,6 +145,12 @@ bun run check
 pi -e ./extensions/meshix/index.ts
 ```
 
+User install from GitHub:
+
+```bash
+pi install https://github.com/shpitdev/skills
+```
+
 Project-local install from this checkout:
 
 ```bash
