@@ -3,12 +3,28 @@
   "author": "SHPIT LLC (https://shpit.dev)",
   "private": true,
   "type": "module",
+  "keywords": [
+    "pi-package"
+  ],
   "scripts": {
     "check": "node scripts/validate-skills.mjs",
     "link:local": "node scripts/link-local-skills.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:meshix-pi": "bun ./extensions/meshix/test.ts"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions/meshix/index.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
   },
   "packageManager": "bun@1.3.14",
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*"
+  },
   "devDependencies": {
     "husky": "^9.1.7",
     "yaml": "^2.9.0"

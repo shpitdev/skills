@@ -130,6 +130,40 @@ The Meshix skill is tuned for practical CAD work: choosing the right generation
 surface, polling long-running jobs, returning the Studio run link, and reviewing
 renders before a user prints anything.
 
+### Pi Extension
+
+This repo also includes a repo-local Pi extension for Meshix under
+`extensions/meshix/`. It connects only to `https://meshix.app/mcp`, stores OAuth
+state under Pi local state (`~/.pi/agent/state/meshix/` by default), and displays
+Meshix PNG renders inline after generation or design inspection.
+
+Local test run:
+
+```bash
+bun run test:meshix-pi
+bun run check
+pi -e ./extensions/meshix/index.ts
+```
+
+Project-local install from this checkout:
+
+```bash
+pi install ./ -l
+```
+
+Commands:
+
+```text
+/meshix-login
+/meshix-status
+/meshix <prompt>
+/meshix-designs
+```
+
+The extension refreshes signed asset URLs through `get_design_assets` and offers
+Pi-native actions to revise a design, open Studio, or open download links. It
+does not store render downloads or OAuth token state in the repository.
+
 ## Slant4D
 
 [Slant4D](https://slant4d.com) is a catalog-backed product for discovering,
