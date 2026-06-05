@@ -98,18 +98,30 @@ export function formatAssetLinks(assets: McpAsset[]) {
   return assets.map((asset) => `- ${assetLabel(asset.kind)}: ${asset.url}`).join("\n");
 }
 
+export function formatAssetSummary(assets: McpAsset[]) {
+  if (assets.length === 0) {
+    return "Downloads: none available";
+  }
+  return `Downloads: ${assets.map((asset) => assetLabel(asset.kind)).join(", ")}`;
+}
+
 export function buildDesignContent({
   assetsResult,
   design,
   heading = "Meshix Design",
+  includeAssetUrls = true,
   renderImages,
 }: {
   assetsResult: DesignAssetsResult;
   design: DesignStatusResult;
   heading?: string;
+  includeAssetUrls?: boolean;
   renderImages: LoadedRenderImage[];
 }): Array<TextContent | ImageContent> {
   const downloads = selectDownloadAssets(assetsResult.assets);
+  const assetText = includeAssetUrls
+    ? ["Asset links:", formatAssetLinks(downloads.length ? downloads : assetsResult.assets)].join("\n")
+    : formatAssetSummary(downloads);
   const text = [
     heading,
     "",
@@ -118,8 +130,7 @@ export function buildDesignContent({
     `Status: ${designStateLabel(design)}`,
     `Studio: ${design.studio_url || assetsResult.studio_url}`,
     "",
-    "Asset links:",
-    formatAssetLinks(downloads.length ? downloads : assetsResult.assets),
+    assetText,
   ].join("\n");
 
   const content: Array<TextContent | ImageContent> = [{ text, type: "text" }];
