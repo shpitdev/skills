@@ -2,6 +2,7 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-c
 import type { ImageContent, TextContent } from "@earendil-works/pi-ai";
 import { MeshixMcpClient, McpHttpError } from "./mcp-client.ts";
 import { openExternalUrl, resolveMeshixAccessToken } from "./oauth.ts";
+import { registerMeshixMessageRenderer } from "./pi-renderer.ts";
 import {
   assetLabel,
   buildDesignContent,
@@ -31,6 +32,15 @@ const MESSAGE_TYPE = "meshix";
 const POLL_ATTEMPTS = 80;
 const POLL_INTERVAL_MS = 15_000;
 const REQUESTED_ASSET_KINDS = [...RENDER_ASSET_KINDS, ...DOWNLOAD_ASSET_KINDS];
+const SPINNER_FRAMES = ["|", "/", "-", "\\"];
+
+interface ActiveMeshixDesign {
+  designId: string;
+  runId?: string;
+  studioUrl: string;
+  title?: string | null;
+  versionId?: string;
+}
 
 interface AuthedMcp {
   callTool<T>(name: string, args?: Record<string, unknown>): Promise<T>;
@@ -44,6 +54,8 @@ interface AuthedMcp {
   prepareCadRequest(args: Record<string, unknown>): Promise<PrepareCadRequestResult>;
   reviseDesign(args: Record<string, unknown>): Promise<RevisionResult>;
 }
+
+let activeDesign: ActiveMeshixDesign | null = null;
 
 type MissingFieldPrompt =
   | {
@@ -301,7 +313,9 @@ async function prepareWithClarification(
 ) {
   let currentArgs = { ...args };
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const prepared = await mcp.prepareCadRequest(currentArgs);
+    const prepared = await withStatusSpinner(ctx, "preparing request", async () =>
+      await mcp.prepareCadRequest(currentArgs)
+    );
     currentArgs = { ...currentArgs, ...prepared.argument_skeleton };
     if (prepared.ready) {
       return { args: currentArgs, prepared };
@@ -326,17 +340,72 @@ async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function rememberActiveDesign(design: DesignStatusResult) {
+  activeDesign = {
+    designId: design.design_id,
+    runId: design.latest_run?.run_id,
+    studioUrl: design.studio_url,
+    title: design.title,
+    versionId: design.selected_version?.version_id,
+  };
+}
+
+function getActiveDesignOrNotify(ctx: ExtensionCommandContext) {
+  if (activeDesign) {
+    return activeDesign;
+  }
+  ctx.ui.notify("Open or create a Meshix design first.", "warning");
+  return null;
+}
+
+function startStatusSpinner(ctx: ExtensionCommandContext, message: string) {
+  let frame = 0;
+  let currentMessage = message;
+  const render = () => {
+    ctx.ui.setStatus("meshix", `${SPINNER_FRAMES[frame]} ${currentMessage}`);
+  };
+  render();
+  const interval = setInterval(() => {
+    frame = (frame + 1) % SPINNER_FRAMES.length;
+    render();
+  }, 120);
+  return {
+    setMessage(nextMessage: string) {
+      currentMessage = nextMessage;
+      render();
+    },
+    stop() {
+      clearInterval(interval);
+      ctx.ui.setStatus("meshix", undefined);
+    },
+  };
+}
+
+async function withStatusSpinner<T>(ctx: ExtensionCommandContext, message: string, operation: () => Promise<T>) {
+  const spinner = startStatusSpinner(ctx, message);
+  try {
+    return await operation();
+  } finally {
+    spinner.stop();
+  }
+}
+
 async function pollDesign(mcp: AuthedMcp, ctx: ExtensionCommandContext, designId: string) {
   let latest: DesignStatusResult | null = null;
-  for (let attempt = 0; attempt < POLL_ATTEMPTS; attempt += 1) {
-    latest = await mcp.getDesign(designId);
-    ctx.ui.setStatus("meshix", `${designId}: ${designStateLabel(latest)}`);
-    if (isTerminalDesignState(latest)) {
-      return latest;
+  const spinner = startStatusSpinner(ctx, `waiting for ${designId}`);
+  try {
+    for (let attempt = 0; attempt < POLL_ATTEMPTS; attempt += 1) {
+      latest = await mcp.getDesign(designId);
+      spinner.setMessage(`${designId}: ${designStateLabel(latest)}`);
+      if (isTerminalDesignState(latest)) {
+        return latest;
+      }
+      if (attempt < POLL_ATTEMPTS - 1) {
+        await sleep(POLL_INTERVAL_MS);
+      }
     }
-    if (attempt < POLL_ATTEMPTS - 1) {
-      await sleep(POLL_INTERVAL_MS);
-    }
+  } finally {
+    spinner.stop();
   }
   throw new Error(
     `Meshix design ${designId} did not reach a terminal state after ${POLL_ATTEMPTS} polls. Latest status: ${
@@ -352,14 +421,19 @@ async function displayDesign(
   design: DesignStatusResult,
   heading = "Meshix Design"
 ) {
-  const assets = await mcp.getDesignAssets(design.design_id, REQUESTED_ASSET_KINDS);
-  const { failures, images } = await loadRenderImages(assets.assets);
+  const { assets, failures, images } = await withStatusSpinner(ctx, "loading previews", async () => {
+    const assets = await mcp.getDesignAssets(design.design_id, REQUESTED_ASSET_KINDS);
+    const { failures, images } = await loadRenderImages(assets.assets);
+    return { assets, failures, images };
+  });
+  rememberActiveDesign(design);
   contentMessage(
     pi,
     buildDesignContent({
       assetsResult: assets,
       design,
       heading,
+      includeAssetUrls: !ctx.hasUI,
       renderImages: images,
     }),
     {
@@ -375,7 +449,8 @@ async function displayDesign(
 }
 
 function formatStatusMessage(status: AccountStatusResult, tools: string[]) {
-  const account = status.account?.displayLabel || status.account?.email || status.account?.id || "unknown Meshix account";
+  const account =
+    status.account?.displayLabel || status.account?.email || status.account?.id || "unknown Meshix account";
   const capabilityTools = status.capabilities?.tools;
   const listedTools = tools.length ? tools : Array.isArray(capabilityTools) ? capabilityTools : [];
   return [
@@ -387,29 +462,43 @@ function formatStatusMessage(status: AccountStatusResult, tools: string[]) {
 }
 
 async function handleLogin(pi: ExtensionAPI, ctx: ExtensionCommandContext) {
-  ctx.ui.setStatus("meshix", "logging in");
   try {
-    const token = await resolveMeshixAccessToken({
-      allowInteractiveLogin: true,
-      forceLogin: true,
-      onAuthorizationUrl: (url) => {
-        ctx.ui.notify("Opening Meshix login in your browser.", "info");
-        textMessage(pi, `Meshix login URL:\n${url}`);
-      },
+    const { status, token } = await withStatusSpinner(ctx, "logging in", async () => {
+      const token = await resolveMeshixAccessToken({
+        allowInteractiveLogin: true,
+        forceLogin: true,
+        onAuthorizationUrl: (url) => {
+          ctx.ui.notify("Opening Meshix login in your browser.", "info");
+          textMessage(pi, `Meshix login URL:\n${url}`);
+        },
+      });
+      const mcp = await createAuthenticatedMcp(false);
+      await mcp.initialize();
+      const status = await mcp.getAccountStatus();
+      return { status, token };
     });
-    const mcp = await createAuthenticatedMcp(false);
-    await mcp.initialize();
-    const status = await mcp.getAccountStatus();
-    textMessage(pi, `Meshix login complete.\nToken source: ${token.source}\nState: ${token.storeDescription}\n\n${formatStatusMessage(status, [])}`);
+    textMessage(
+      pi,
+      [
+        "Meshix login complete.",
+        `Token source: ${token.source}`,
+        `State: ${token.storeDescription}`,
+        "",
+        formatStatusMessage(status, []),
+      ].join("\n")
+    );
   } finally {
     ctx.ui.setStatus("meshix", undefined);
   }
 }
 
 async function handleStatus(pi: ExtensionAPI, ctx: ExtensionCommandContext) {
-  const mcp = await createAuthenticatedMcp(false);
-  await mcp.initialize();
-  const [status, toolsResult] = await Promise.all([mcp.getAccountStatus(), mcp.listTools()]);
+  const { status, toolsResult } = await withStatusSpinner(ctx, "checking status", async () => {
+    const mcp = await createAuthenticatedMcp(false);
+    await mcp.initialize();
+    const [status, toolsResult] = await Promise.all([mcp.getAccountStatus(), mcp.listTools()]);
+    return { status, toolsResult };
+  });
   textMessage(
     pi,
     formatStatusMessage(
@@ -428,7 +517,6 @@ async function handleMeshix(pi: ExtensionAPI, ctx: ExtensionCommandContext, prom
 
   const mcp = await createAuthenticatedMcp(false);
   await mcp.initialize();
-  ctx.ui.setStatus("meshix", "preparing request");
   try {
     const prepared = await prepareWithClarification(mcp, ctx, { prompt: prompt.trim() });
     if (!prepared) {
@@ -436,12 +524,12 @@ async function handleMeshix(pi: ExtensionAPI, ctx: ExtensionCommandContext, prom
       return;
     }
     const tool = createToolFromRecommendation(prepared.prepared.recommended_tool);
-    ctx.ui.setStatus("meshix", `queueing ${tool}`);
-    const created = await mcp.callTool<CreatedDesignResult>(tool, prepared.args);
+    const created = await withStatusSpinner(ctx, `queueing ${tool}`, async () =>
+      await mcp.callTool<CreatedDesignResult>(tool, prepared.args)
+    );
     textMessage(pi, `Queued Meshix design ${created.design_id} with ${tool}.\nStudio: ${created.studio_url}`);
     const design = await pollDesign(mcp, ctx, created.design_id);
-    const assets = await displayDesign(pi, ctx, mcp, design, "Meshix Generated Design");
-    await offerDesignActions(pi, ctx, mcp, design, assets);
+    await displayDesign(pi, ctx, mcp, design, "Meshix Generated Design");
   } finally {
     ctx.ui.setStatus("meshix", undefined);
   }
@@ -450,7 +538,9 @@ async function handleMeshix(pi: ExtensionAPI, ctx: ExtensionCommandContext, prom
 async function handleDesigns(pi: ExtensionAPI, ctx: ExtensionCommandContext) {
   const mcp = await createAuthenticatedMcp(false);
   await mcp.initialize();
-  const list = await mcp.listDesigns({ limit: 10, scope: "mine" });
+  const list = await withStatusSpinner(ctx, "loading designs", async () =>
+    await mcp.listDesigns({ limit: 10, scope: "mine" })
+  );
   if (list.items.length === 0) {
     textMessage(pi, "No owned Meshix designs were returned.");
     return;
@@ -481,82 +571,93 @@ async function handleDesigns(pi: ExtensionAPI, ctx: ExtensionCommandContext) {
   if (!item) {
     return;
   }
-  const design = await mcp.getDesign(item.design_id);
-  const assets = await displayDesign(pi, ctx, mcp, design, "Meshix Selected Design");
-  await offerDesignActions(pi, ctx, mcp, design, assets);
+  const design = await withStatusSpinner(ctx, "loading design", async () => await mcp.getDesign(item.design_id));
+  await displayDesign(pi, ctx, mcp, design, "Meshix Selected Design");
 }
 
 async function reviseDesign(
   pi: ExtensionAPI,
   ctx: ExtensionCommandContext,
   mcp: AuthedMcp,
-  design: DesignStatusResult
+  design: ActiveMeshixDesign,
+  prompt?: string
 ) {
-  const revisionPrompt = await ctx.ui.input("Revise Meshix design", "Describe the change to make");
-  if (!revisionPrompt?.trim()) {
+  let revisionPrompt = prompt?.trim() || "";
+  if (!revisionPrompt && ctx.hasUI) {
+    revisionPrompt = (await ctx.ui.input("Revise Meshix design", "Describe the change to make"))?.trim() || "";
+  }
+  if (!revisionPrompt) {
+    ctx.ui.notify("Usage: /meshix-revise <change to make>", "warning");
     return null;
   }
   const revisionArgs: Record<string, unknown> = {
-    design_id: design.design_id,
-    revision_prompt: revisionPrompt.trim(),
+    design_id: design.designId,
+    revision_prompt: revisionPrompt,
   };
-  if (design.latest_run?.run_id) {
-    revisionArgs.run_id = design.latest_run.run_id;
+  if (design.runId) {
+    revisionArgs.run_id = design.runId;
   }
-  if (design.selected_version?.version_id) {
-    revisionArgs.version_id = design.selected_version.version_id;
+  if (design.versionId) {
+    revisionArgs.version_id = design.versionId;
   }
-  ctx.ui.setStatus("meshix", "queueing revision");
-  const revised = await mcp.reviseDesign(revisionArgs);
+  const revised = await withStatusSpinner(ctx, "queueing revision", async () => await mcp.reviseDesign(revisionArgs));
   textMessage(pi, `Queued Meshix revision ${revised.run_id} for ${revised.design_id}.\nStudio: ${revised.studio_url}`);
   const revisedDesign = await pollDesign(mcp, ctx, revised.design_id);
   const revisedAssets = await displayDesign(pi, ctx, mcp, revisedDesign, "Meshix Revised Design");
   return { assets: revisedAssets, design: revisedDesign };
 }
 
-async function offerDesignActions(
-  pi: ExtensionAPI,
-  ctx: ExtensionCommandContext,
-  mcp: AuthedMcp,
-  initialDesign: DesignStatusResult,
-  initialAssets: DesignAssetsResult
-) {
-  if (!ctx.hasUI) {
+async function handleRevise(pi: ExtensionAPI, ctx: ExtensionCommandContext, prompt: string) {
+  const design = getActiveDesignOrNotify(ctx);
+  if (!design) {
     return;
   }
-  let design = initialDesign;
-  let assets = initialAssets;
-  while (true) {
-    const downloads = selectDownloadAssets(assets.assets);
-    const actions = [
-      "Revise design",
-      "Open Studio",
-      ...downloads.map((asset) => `Open ${assetLabel(asset.kind)} download`),
-      "Done",
-    ];
-    const selected = await ctx.ui.select("Meshix next action", actions);
-    if (!selected || selected === "Done") {
-      return;
-    }
-    if (selected === "Open Studio") {
-      const opened = await openExternalUrl(design.studio_url || assets.studio_url);
-      ctx.ui.notify(opened ? "Opened Meshix Studio." : design.studio_url || assets.studio_url, opened ? "info" : "warning");
-      continue;
-    }
-    if (selected === "Revise design") {
-      const revised = await reviseDesign(pi, ctx, mcp, design);
-      if (revised) {
-        design = revised.design;
-        assets = revised.assets;
-      }
-      continue;
-    }
-    const asset = downloads.find((candidate) => selected === `Open ${assetLabel(candidate.kind)} download`);
-    if (asset) {
-      const opened = await openExternalUrl(asset.url);
-      ctx.ui.notify(opened ? `Opened ${assetLabel(asset.kind)} download.` : asset.url, opened ? "info" : "warning");
-    }
+  const mcp = await createAuthenticatedMcp(false);
+  await mcp.initialize();
+  await reviseDesign(pi, ctx, mcp, design, prompt);
+}
+
+function normalizeOpenTarget(target: string) {
+  const normalized = target.trim().toLowerCase();
+  if (!normalized || normalized === "studio") {
+    return "studio";
   }
+  if (normalized === "stl" || normalized === "step" || normalized === "plan") {
+    return normalized;
+  }
+  return null;
+}
+
+async function handleOpen(ctx: ExtensionCommandContext, targetArg: string) {
+  const design = getActiveDesignOrNotify(ctx);
+  if (!design) {
+    return;
+  }
+  const target = normalizeOpenTarget(targetArg);
+  if (!target) {
+    ctx.ui.notify("Usage: /meshix-open studio|stl|step|plan", "warning");
+    return;
+  }
+  if (target === "studio") {
+    const opened = await withStatusSpinner(ctx, "opening Studio", async () => await openExternalUrl(design.studioUrl));
+    ctx.ui.notify(opened ? "Opened Meshix Studio." : design.studioUrl, opened ? "info" : "warning");
+    return;
+  }
+
+  const mcp = await createAuthenticatedMcp(false);
+  await mcp.initialize();
+  const assets = await withStatusSpinner(ctx, "loading downloads", async () =>
+    await mcp.getDesignAssets(design.designId, DOWNLOAD_ASSET_KINDS)
+  );
+  const asset = selectDownloadAssets(assets.assets).find((candidate) => candidate.kind === target);
+  if (!asset) {
+    ctx.ui.notify(`${assetLabel(target)} download is not available for ${design.title || design.designId}.`, "warning");
+    return;
+  }
+  const opened = await withStatusSpinner(ctx, `opening ${assetLabel(asset.kind)}`, async () =>
+    await openExternalUrl(asset.url)
+  );
+  ctx.ui.notify(opened ? `Opened ${assetLabel(asset.kind)} download.` : asset.url, opened ? "info" : "warning");
 }
 
 function withCommandErrors(
@@ -569,7 +670,9 @@ function withCommandErrors(
   });
 }
 
-export default function meshixPiExtension(pi: ExtensionAPI) {
+export default async function meshixPiExtension(pi: ExtensionAPI) {
+  await registerMeshixMessageRenderer(pi);
+
   pi.registerCommand("meshix-login", {
     description: "Sign in to Meshix MCP with OAuth",
     handler: async (_args, ctx) => {
@@ -595,6 +698,20 @@ export default function meshixPiExtension(pi: ExtensionAPI) {
     description: "List and inspect owned Meshix designs",
     handler: async (_args, ctx) => {
       await withCommandErrors(ctx, async () => await handleDesigns(pi, ctx));
+    },
+  });
+
+  pi.registerCommand("meshix-revise", {
+    description: "Revise the active Meshix design",
+    handler: async (args, ctx) => {
+      await withCommandErrors(ctx, async () => await handleRevise(pi, ctx, args));
+    },
+  });
+
+  pi.registerCommand("meshix-open", {
+    description: "Open Studio or a download for the active Meshix design",
+    handler: async (args, ctx) => {
+      await withCommandErrors(ctx, async () => await handleOpen(ctx, args));
     },
   });
 }

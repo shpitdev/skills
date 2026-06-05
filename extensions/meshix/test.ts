@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { buildMissingFieldPrompts } from "./index.ts";
 import { buildJsonRpcRequest, MeshixMcpClient } from "./mcp-client.ts";
 import { discoverMeshixOAuth, protectedResourceMetadataUrl } from "./oauth.ts";
-import { isTerminalDesignState, selectRenderAssets } from "./renderers.ts";
+import { imageProtocolFromProcessNames, normalizeImageProtocolOverride } from "./pi-renderer.ts";
+import { buildDesignContent, isTerminalDesignState, selectRenderAssets } from "./renderers.ts";
 import type { McpAsset } from "./types.ts";
 
 async function testOAuthDiscoveryParsing() {
@@ -153,6 +154,71 @@ function testRenderAssetSelection() {
   );
 }
 
+function testDesignContentCanHideSignedUrlsInUiMode() {
+  const assets: McpAsset[] = [
+    {
+      expires_hint: "refresh_with_get_design",
+      filename: "model.stl",
+      kind: "stl",
+      label: "STL",
+      mime_type: "model/stl",
+      role: "mesh",
+      url: "https://assets.example/model.stl?signature=secret",
+    },
+    {
+      expires_hint: "refresh_with_get_design",
+      filename: "model.step",
+      kind: "step",
+      label: "STEP",
+      mime_type: "model/step",
+      role: "cad",
+      url: "https://assets.example/model.step?signature=secret",
+    },
+  ];
+  const content = buildDesignContent({
+    assetsResult: {
+      assets,
+      design_id: "design_ready",
+      latest_run: null,
+      missing_kinds: [],
+      status: "ready",
+      studio_url: "https://meshix.example/studio/design/design_ready",
+    },
+    design: {
+      design_id: "design_ready",
+      latest_run: null,
+      status: "ready",
+      studio_url: "https://meshix.example/studio/design/design_ready",
+      title: "Ready design",
+    },
+    includeAssetUrls: false,
+    renderImages: [
+      {
+        asset: assets[0]!,
+        image: { data: "iVBORw0KGgo=", mimeType: "image/png", type: "image" },
+      },
+    ],
+  });
+  assert.equal(content[0]?.type, "text");
+  assert.match(content[0]?.type === "text" ? content[0].text : "", /Downloads: STL, STEP/);
+  assert.doesNotMatch(content[0]?.type === "text" ? content[0].text : "", /signature=secret/);
+  assert.equal(content.some((block) => block.type === "image"), true);
+}
+
+function testTerminalImageProtocolDetection() {
+  assert.equal(normalizeImageProtocolOverride(undefined), undefined);
+  assert.equal(normalizeImageProtocolOverride("auto"), undefined);
+  assert.equal(normalizeImageProtocolOverride("kitty"), "kitty");
+  assert.equal(normalizeImageProtocolOverride("iterm2"), "iterm2");
+  assert.equal(normalizeImageProtocolOverride("off"), null);
+  assert.equal(imageProtocolFromProcessNames(["/bin/zsh", "/Applications/Ghostty.app/Contents/MacOS/ghostty"]), "kitty");
+  assert.equal(imageProtocolFromProcessNames(["/bin/zsh", "/Applications/iTerm.app/Contents/MacOS/iTerm2"]), "iterm2");
+  assert.equal(
+    imageProtocolFromProcessNames(["/bin/zsh", "/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal"]),
+    null
+  );
+}
+
 function testTerminalDesignState() {
   assert.equal(
     isTerminalDesignState({
@@ -256,6 +322,8 @@ await testOAuthDiscoveryParsing();
 await testJsonRpcRequestConstruction();
 await testToolCallResponseParsing();
 testRenderAssetSelection();
+testDesignContentCanHideSignedUrlsInUiMode();
+testTerminalImageProtocolDetection();
 testTerminalDesignState();
 testMissingFieldHandling();
 
