@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { buildMissingFieldPrompts } from "./index.ts";
+import { buildActiveMeshixSystemPrompt, buildMissingFieldPrompts } from "./index.ts";
 import { buildJsonRpcRequest, MeshixMcpClient } from "./mcp-client.ts";
 import { discoverMeshixOAuth, protectedResourceMetadataUrl } from "./oauth.ts";
 import { imageProtocolFromProcessNames, normalizeImageProtocolOverride } from "./pi-renderer.ts";
@@ -219,6 +219,23 @@ function testTerminalImageProtocolDetection() {
   );
 }
 
+function testActiveMeshixSystemPrompt() {
+  const prompt = buildActiveMeshixSystemPrompt(
+    "Base prompt",
+    [
+      "Mode: meshix",
+      "Title: Gridfinity M.2 2280 Dual Holder",
+      "Design ID: design_123",
+      "Studio: https://meshix.app/studio/design/design_123",
+    ].join("\n")
+  );
+  assert.match(prompt, /Active Meshix Design Mode/);
+  assert.match(prompt, /meshix_revise_active_design/);
+  assert.match(prompt, /meshix_inspect_active_design/);
+  assert.match(prompt, /Do not search the local repository/);
+  assert.equal(buildActiveMeshixSystemPrompt("Base prompt", undefined), "Base prompt");
+}
+
 function testTerminalDesignState() {
   assert.equal(
     isTerminalDesignState({
@@ -324,6 +341,7 @@ await testToolCallResponseParsing();
 testRenderAssetSelection();
 testDesignContentCanHideSignedUrlsInUiMode();
 testTerminalImageProtocolDetection();
+testActiveMeshixSystemPrompt();
 testTerminalDesignState();
 testMissingFieldHandling();
 
