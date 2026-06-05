@@ -1,5 +1,5 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
-import type { ImageContent, TextContent } from "@earendil-works/pi-ai";
+import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { Type, type ImageContent, type TextContent } from "@earendil-works/pi-ai";
 import { MeshixMcpClient, McpHttpError } from "./mcp-client.ts";
 import { openExternalUrl, resolveMeshixAccessToken } from "./oauth.ts";
 import { registerMeshixMessageRenderer } from "./pi-renderer.ts";
@@ -23,6 +23,7 @@ import {
   type DesignAssetsResult,
   type DesignListItem,
   type DesignStatusResult,
+  type McpAsset,
   type MissingField,
   type PrepareCadRequestResult,
   type RevisionResult,
@@ -33,6 +34,24 @@ const POLL_ATTEMPTS = 80;
 const POLL_INTERVAL_MS = 15_000;
 const REQUESTED_ASSET_KINDS = [...RENDER_ASSET_KINDS, ...DOWNLOAD_ASSET_KINDS];
 const SPINNER_FRAMES = ["|", "/", "-", "\\"];
+const MODE_WIDGET_KEY = "meshix-mode";
+
+type MeshixMode = "chat" | "meshix";
+
+const REVISE_ACTIVE_DESIGN_PARAMS = Type.Object({
+  feedback: Type.String({
+    description:
+      "The user's natural-language revision feedback for the active Meshix design. Preserve their intent and physical constraints.",
+  }),
+});
+
+const INSPECT_ACTIVE_DESIGN_PARAMS = Type.Object({
+  includePlan: Type.Optional(
+    Type.Boolean({
+      description: "Fetch and include the generated plan/markdown asset when available.",
+    })
+  ),
+});
 
 interface ActiveMeshixDesign {
   designId: string;
@@ -56,6 +75,7 @@ interface AuthedMcp {
 }
 
 let activeDesign: ActiveMeshixDesign | null = null;
+let meshixMode: MeshixMode = "chat";
 
 type MissingFieldPrompt =
   | {
@@ -94,6 +114,88 @@ function contentMessage(pi: ExtensionAPI, content: Array<TextContent | ImageCont
 
 function isUnauthorizedError(error: unknown) {
   return error instanceof McpHttpError && error.status === 401;
+}
+
+function activeDesignLabel(design: ActiveMeshixDesign) {
+  return design.title || design.designId;
+}
+
+function modeStatusText() {
+  if (meshixMode === "meshix" && activeDesign) {
+    return `Meshix mode: ${activeDesignLabel(activeDesign)}`;
+  }
+  if (activeDesign) {
+    return `Chat mode; Meshix active: ${activeDesignLabel(activeDesign)}`;
+  }
+  return "Chat mode";
+}
+
+function updateModeUi(ctx: ExtensionContext) {
+  ctx.ui.setStatus("meshix-mode", modeStatusText());
+  if (!activeDesign) {
+    ctx.ui.setWidget(MODE_WIDGET_KEY, undefined);
+    return;
+  }
+  if (meshixMode === "meshix") {
+    ctx.ui.setWidget(
+      MODE_WIDGET_KEY,
+      [
+        `Meshix mode: ${activeDesignLabel(activeDesign)}`,
+        "Plain feedback revises this design. Questions stay about this design. Use /meshix-chat for normal Pi chat.",
+      ],
+      { placement: "aboveEditor" }
+    );
+    return;
+  }
+  ctx.ui.setWidget(
+    MODE_WIDGET_KEY,
+    [
+      "Chat mode: normal Pi agent",
+      `Active Meshix design: ${activeDesignLabel(activeDesign)}. Use /meshix-mode meshix or /meshix-revise <change>.`,
+    ],
+    { placement: "aboveEditor" }
+  );
+}
+
+function setMeshixMode(ctx: ExtensionContext, mode: MeshixMode) {
+  meshixMode = mode;
+  updateModeUi(ctx);
+}
+
+function activeDesignContext() {
+  if (!activeDesign) {
+    return undefined;
+  }
+  return [
+    `Mode: ${meshixMode}`,
+    `Title: ${activeDesign.title || "untitled"}`,
+    `Design ID: ${activeDesign.designId}`,
+    activeDesign.runId ? `Run ID: ${activeDesign.runId}` : undefined,
+    activeDesign.versionId ? `Version ID: ${activeDesign.versionId}` : undefined,
+    `Studio: ${activeDesign.studioUrl}`,
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
+}
+
+export function buildActiveMeshixSystemPrompt(basePrompt: string, context: string | undefined) {
+  if (!context) {
+    return basePrompt;
+  }
+  return `${basePrompt}
+
+## Active Meshix Design Mode
+
+There is an active Meshix CAD design in the Pi UI.
+
+${context}
+
+When Mode is "meshix", treat brief natural-language follow-ups as referring to the active Meshix design unless they are clearly unrelated.
+
+- If the user asks for a change, improvement, adjustment, refinement, tighter fit, looser fit, stronger retention, dimensions, or printability change, call \`meshix_revise_active_design\` with the user's feedback. Do not search the local repository for design data first.
+- If the user asks a question about the active design, answer from the visible Meshix context or call \`meshix_inspect_active_design\` when exact status, assets, or generated plan details would help. Do not inspect unrelated local files for Meshix design truth.
+- If the user wants normal coding chat instead, tell them they are in Meshix mode and can run \`/meshix-chat\`, or continue normally only when the request is clearly unrelated to Meshix.
+- Keep responses concise and make the mode boundary explicit when it matters.`;
 }
 
 async function createAuthenticatedMcp(allowInteractiveLogin: boolean, forceLogin = false): Promise<AuthedMcp> {
@@ -340,7 +442,7 @@ async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function rememberActiveDesign(design: DesignStatusResult) {
+function rememberActiveDesign(ctx: ExtensionContext, design: DesignStatusResult, mode: MeshixMode = "meshix") {
   activeDesign = {
     designId: design.design_id,
     runId: design.latest_run?.run_id,
@@ -348,9 +450,10 @@ function rememberActiveDesign(design: DesignStatusResult) {
     title: design.title,
     versionId: design.selected_version?.version_id,
   };
+  setMeshixMode(ctx, mode);
 }
 
-function getActiveDesignOrNotify(ctx: ExtensionCommandContext) {
+function getActiveDesignOrNotify(ctx: ExtensionContext) {
   if (activeDesign) {
     return activeDesign;
   }
@@ -358,7 +461,7 @@ function getActiveDesignOrNotify(ctx: ExtensionCommandContext) {
   return null;
 }
 
-function startStatusSpinner(ctx: ExtensionCommandContext, message: string) {
+function startStatusSpinner(ctx: ExtensionContext, message: string) {
   let frame = 0;
   let currentMessage = message;
   const render = () => {
@@ -377,11 +480,12 @@ function startStatusSpinner(ctx: ExtensionCommandContext, message: string) {
     stop() {
       clearInterval(interval);
       ctx.ui.setStatus("meshix", undefined);
+      updateModeUi(ctx);
     },
   };
 }
 
-async function withStatusSpinner<T>(ctx: ExtensionCommandContext, message: string, operation: () => Promise<T>) {
+async function withStatusSpinner<T>(ctx: ExtensionContext, message: string, operation: () => Promise<T>) {
   const spinner = startStatusSpinner(ctx, message);
   try {
     return await operation();
@@ -390,7 +494,7 @@ async function withStatusSpinner<T>(ctx: ExtensionCommandContext, message: strin
   }
 }
 
-async function pollDesign(mcp: AuthedMcp, ctx: ExtensionCommandContext, designId: string) {
+async function pollDesign(mcp: AuthedMcp, ctx: ExtensionContext, designId: string) {
   let latest: DesignStatusResult | null = null;
   const spinner = startStatusSpinner(ctx, `waiting for ${designId}`);
   try {
@@ -426,7 +530,7 @@ async function displayDesign(
     const { failures, images } = await loadRenderImages(assets.assets);
     return { assets, failures, images };
   });
-  rememberActiveDesign(design);
+  rememberActiveDesign(ctx, design);
   contentMessage(
     pi,
     buildDesignContent({
@@ -577,7 +681,7 @@ async function handleDesigns(pi: ExtensionAPI, ctx: ExtensionCommandContext) {
 
 async function reviseDesign(
   pi: ExtensionAPI,
-  ctx: ExtensionCommandContext,
+  ctx: ExtensionContext,
   mcp: AuthedMcp,
   design: ActiveMeshixDesign,
   prompt?: string
@@ -660,6 +764,123 @@ async function handleOpen(ctx: ExtensionCommandContext, targetArg: string) {
   ctx.ui.notify(opened ? `Opened ${assetLabel(asset.kind)} download.` : asset.url, opened ? "info" : "warning");
 }
 
+async function fetchPlanText(asset: McpAsset | undefined) {
+  if (!asset) {
+    return undefined;
+  }
+  const response = await fetch(asset.url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${assetLabel(asset.kind)}: HTTP ${response.status}`);
+  }
+  const text = await response.text();
+  const maxChars = 12_000;
+  return text.length > maxChars ? `${text.slice(0, maxChars)}\n\n[Plan truncated at ${maxChars} chars]` : text;
+}
+
+function formatDesignInspection(design: DesignStatusResult, assets: DesignAssetsResult, planText?: string) {
+  const downloads = selectDownloadAssets(assets.assets);
+  const renders = RENDER_ASSET_KINDS.filter((kind) => assets.assets.some((asset) => asset.kind === kind));
+  return [
+    "Active Meshix design",
+    "",
+    `Title: ${design.title || design.design_id}`,
+    `Design: ${design.design_id}`,
+    `Status: ${designStateLabel(design)}`,
+    `Studio: ${design.studio_url || assets.studio_url}`,
+    downloads.length ? `Downloads: ${downloads.map((asset) => assetLabel(asset.kind)).join(", ")}` : "Downloads: none",
+    renders.length ? `Render previews: ${renders.map(assetLabel).join(", ")}` : "Render previews: none",
+    planText ? ["", "Generated plan:", "", planText].join("\n") : undefined,
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
+}
+
+function registerActiveDesignTools(pi: ExtensionAPI) {
+  pi.registerTool({
+    name: "meshix_revise_active_design",
+    label: "Revise Active Meshix Design",
+    description:
+      "Revise the active Meshix CAD design from natural-language user feedback. Use this when the user is in Meshix mode and asks to tighten, loosen, improve, resize, add, remove, adjust, or otherwise change the active design.",
+    promptSnippet: "Revise the active Meshix CAD design from natural-language feedback.",
+    promptGuidelines: [
+      "When Meshix mode is active and the user gives design feedback or asks for a change, call meshix_revise_active_design.",
+      "Do not search local project files to revise a Meshix design; use the active Meshix design state.",
+    ],
+    parameters: REVISE_ACTIVE_DESIGN_PARAMS,
+    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+      const design = getActiveDesignOrNotify(ctx);
+      if (!design) {
+        return {
+          content: [{ text: "No active Meshix design. Run /meshix-designs or /meshix <prompt> first.", type: "text" }],
+          isError: true,
+        };
+      }
+      const mcp = await createAuthenticatedMcp(false);
+      await mcp.initialize();
+      const revised = await reviseDesign(pi, ctx, mcp, design, params.feedback);
+      if (!revised) {
+        return {
+          content: [{ text: "No revision was queued because no feedback was provided.", type: "text" }],
+          isError: true,
+        };
+      }
+      return {
+        content: [
+          {
+            text: `Queued and loaded Meshix revision for ${revised.design.design_id}.\nStudio: ${revised.design.studio_url}`,
+            type: "text",
+          },
+        ],
+        details: {
+          design_id: revised.design.design_id,
+          studio_url: revised.design.studio_url,
+          title: revised.design.title,
+        },
+      };
+    },
+  });
+
+  pi.registerTool({
+    name: "meshix_inspect_active_design",
+    label: "Inspect Active Meshix Design",
+    description:
+      "Inspect the active Meshix CAD design, including status, available assets, and optionally the generated plan text. Use this for natural questions about the active design.",
+    promptSnippet: "Inspect the active Meshix design status, assets, and generated plan.",
+    promptGuidelines: [
+      "When Meshix mode is active and the user asks a question about the design, call meshix_inspect_active_design if exact Meshix state or plan details would help.",
+      "Do not inspect unrelated local files for Meshix design facts.",
+    ],
+    parameters: INSPECT_ACTIVE_DESIGN_PARAMS,
+    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+      const design = getActiveDesignOrNotify(ctx);
+      if (!design) {
+        return {
+          content: [{ text: "No active Meshix design. Run /meshix-designs or /meshix <prompt> first.", type: "text" }],
+          isError: true,
+        };
+      }
+      const mcp = await createAuthenticatedMcp(false);
+      await mcp.initialize();
+      const [currentDesign, assets] = await withStatusSpinner(ctx, "inspecting design", async () => {
+        const currentDesign = await mcp.getDesign(design.designId);
+        const assets = await mcp.getDesignAssets(design.designId, REQUESTED_ASSET_KINDS);
+        return [currentDesign, assets] as const;
+      });
+      rememberActiveDesign(ctx, currentDesign, meshixMode);
+      const planAsset = assets.assets.find((asset) => asset.kind === "plan");
+      const planText = params.includePlan ? await fetchPlanText(planAsset) : undefined;
+      return {
+        content: [{ text: formatDesignInspection(currentDesign, assets, planText), type: "text" }],
+        details: {
+          assets,
+          design_id: currentDesign.design_id,
+          status: currentDesign.status,
+        },
+      };
+    },
+  });
+}
+
 function withCommandErrors(
   ctx: ExtensionCommandContext,
   handler: () => Promise<void>
@@ -672,6 +893,20 @@ function withCommandErrors(
 
 export default async function meshixPiExtension(pi: ExtensionAPI) {
   await registerMeshixMessageRenderer(pi);
+  registerActiveDesignTools(pi);
+
+  pi.on("session_start", (_event, ctx) => {
+    updateModeUi(ctx);
+  });
+
+  pi.on("before_agent_start", (event) => {
+    if (!activeDesign || meshixMode !== "meshix") {
+      return;
+    }
+    return {
+      systemPrompt: buildActiveMeshixSystemPrompt(event.systemPrompt, activeDesignContext()),
+    };
+  });
 
   pi.registerCommand("meshix-login", {
     description: "Sign in to Meshix MCP with OAuth",
@@ -712,6 +947,36 @@ export default async function meshixPiExtension(pi: ExtensionAPI) {
     description: "Open Studio or a download for the active Meshix design",
     handler: async (args, ctx) => {
       await withCommandErrors(ctx, async () => await handleOpen(ctx, args));
+    },
+  });
+
+  pi.registerCommand("meshix-chat", {
+    description: "Switch free-form prompts back to normal Pi chat",
+    handler: async (_args, ctx) => {
+      setMeshixMode(ctx, "chat");
+      ctx.ui.notify("Switched to Chat mode. Meshix commands still work with /meshix-*.", "info");
+    },
+  });
+
+  pi.registerCommand("meshix-mode", {
+    description: "Show or switch Meshix mode: /meshix-mode meshix|chat",
+    handler: async (args, ctx) => {
+      const mode = args.trim().toLowerCase();
+      if (!mode) {
+        updateModeUi(ctx);
+        ctx.ui.notify(modeStatusText(), "info");
+        return;
+      }
+      if (mode !== "meshix" && mode !== "chat") {
+        ctx.ui.notify("Usage: /meshix-mode meshix|chat", "warning");
+        return;
+      }
+      if (mode === "meshix" && !activeDesign) {
+        ctx.ui.notify("Open or create a Meshix design first.", "warning");
+        return;
+      }
+      setMeshixMode(ctx, mode);
+      ctx.ui.notify(modeStatusText(), "info");
     },
   });
 }
