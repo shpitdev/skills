@@ -128,6 +128,10 @@ codex plugin remove slant4d@personal
 ## Claude Code
 
 Meshix is currently the only Claude Code plugin published in this repo.
+Slant4D is available to Claude Code through MCP setup in the Slant4D skill
+reference instead of a Claude plugin. Use the direct HTTP `slant4d` server for
+operator tools and the `mcp-remote` stdio `slant4d-codemode` server for the
+Cloudflare Code Mode portal.
 
 Install from the GitHub marketplace source:
 

@@ -102,6 +102,9 @@ claude plugin marketplace add shpitdev/skills
 claude plugin install meshix@shpitdev-skills
 ```
 
+Slant4D does not currently publish a Claude Code plugin. Use the Slant4D setup
+reference for Claude MCP commands, including the `mcp-remote` Code Mode bridge.
+
 Connect Meshix in Claude.ai or Claude Desktop:
 
 1. Open Claude's connector settings.
