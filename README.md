@@ -49,6 +49,9 @@ codex plugin add tabex@shpitdev-skills
 codex plugin add slant4d@shpitdev-skills
 codex mcp login meshix
 codex mcp login slant4d
+codex mcp add slant4d-codemode -- \
+  npx -y mcp-remote@latest \
+  'https://agents-portal.slant4d.com/mcp?codemode=search_and_execute'
 ```
 
 Update an existing Codex install:
@@ -61,7 +64,9 @@ codex plugin add tabex@shpitdev-skills
 
 Repeat the remove/add pair for `meshix` or `slant4d` when their bundled plugin
 version changes. Meshix and Slant4D may also need `codex mcp login <name>` after
-install because they register OAuth-backed MCP servers.
+install because they register OAuth-backed MCP servers. Slant4D Code Mode should
+show up as `slant4d-codemode`; it uses `mcp-remote` because Codex native HTTP
+MCP does not authenticate the query-string Code Mode portal correctly.
 
 If `marketplace upgrade` says `shpitdev-skills` is not configured as a Git
 marketplace, the marketplace was added from a local path or stale snapshot. Fix
