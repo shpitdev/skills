@@ -1,6 +1,6 @@
 {
   "name": "slant4d",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run Slant4D catalog, operator MCP, source-part readiness, and lifecycle proof workflows.",
   "author": {
     "name": "SHPIT LLC",

@@ -12,3 +12,12 @@ dependencies:
       description: "Slant4D operator MCP server"
       transport: "streamable_http"
       url: "https://agents.slant4d.com/mcp"
+    - type: "mcp"
+      value: "slant4d-codemode"
+      description: "Slant4D Cloudflare Code Mode portal"
+      transport: "stdio"
+      command: "npx"
+      args:
+        - "-y"
+        - "mcp-remote@latest"
+        - "https://agents-portal.slant4d.com/mcp?codemode=search_and_execute"

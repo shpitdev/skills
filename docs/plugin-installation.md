@@ -81,6 +81,16 @@ codex plugin list
 codex mcp list
 ```
 
+The Slant4D plugin registers two MCP servers: `slant4d` for direct operator
+tools and `slant4d-codemode` for the Cloudflare Code Mode portal. If an existing
+install does not show `slant4d-codemode`, add it explicitly:
+
+```bash
+codex mcp add slant4d-codemode -- \
+  npx -y mcp-remote@latest \
+  'https://agents-portal.slant4d.com/mcp?codemode=search_and_execute'
+```
+
 Authenticate Slant4D MCP:
 
 ```bash
@@ -89,6 +99,10 @@ codex mcp login slant4d
 
 Slant4D MCP uses Cloudflare Access OAuth. CLI installs may still need the
 explicit `codex mcp login slant4d` step before operator tools are available.
+Code Mode uses the `mcp-remote` stdio bridge because Codex native HTTP MCP
+currently treats the query-string portal URL as the OAuth resource; the bridge
+authenticates against the base portal resource and exposes
+`portal_codemode_search` and `portal_codemode_execute`.
 
 Update an existing Codex install:
 
