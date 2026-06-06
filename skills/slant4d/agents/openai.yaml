@@ -1,20 +1,15 @@
 interface:
   display_name: "Slant4D"
-  short_description: "Slant4D operator and corpus workflows"
+  short_description: "Slant4D Code Mode workflows"
   icon_small: "./assets/logo.svg"
   icon_large: "./assets/logo-large.png"
   brand_color: "#FD00FC"
-  default_prompt: "Use $slant4d to resolve market insert evidence against Slant4D catalog, operator sync, source-part readiness, and lifecycle proof state."
+  default_prompt: "Use $slant4d to resolve market insert evidence against Slant4D catalog, source-part readiness, and lifecycle proof state through Cloudflare Code Mode."
 dependencies:
   tools:
     - type: "mcp"
-      value: "slant4d"
-      description: "Slant4D operator MCP server"
-      transport: "streamable_http"
-      url: "https://agents.slant4d.com/mcp"
-    - type: "mcp"
       value: "slant4d-codemode"
-      description: "Slant4D Cloudflare Code Mode portal"
+      description: "Slant4D Cloudflare Code Mode portal; exposes only portal_codemode_search and portal_codemode_execute"
       transport: "stdio"
       command: "npx"
       args:

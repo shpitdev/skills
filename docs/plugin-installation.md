@@ -81,9 +81,9 @@ codex plugin list
 codex mcp list
 ```
 
-The Slant4D plugin registers two MCP servers: `slant4d` for direct operator
-tools and `slant4d-codemode` for the Cloudflare Code Mode portal. If an existing
-install does not show `slant4d-codemode`, add it explicitly:
+The Slant4D plugin registers only the Cloudflare Code Mode portal as
+`slant4d-codemode`. If an existing install does not show `slant4d-codemode`, add
+it explicitly:
 
 ```bash
 codex mcp add slant4d-codemode -- \
@@ -91,18 +91,12 @@ codex mcp add slant4d-codemode -- \
   'https://agents-portal.slant4d.com/mcp?codemode=search_and_execute'
 ```
 
-Authenticate Slant4D MCP:
-
-```bash
-codex mcp login slant4d
-```
-
-Slant4D MCP uses Cloudflare Access OAuth. CLI installs may still need the
-explicit `codex mcp login slant4d` step before operator tools are available.
-Code Mode uses the `mcp-remote` stdio bridge because Codex native HTTP MCP
-currently treats the query-string portal URL as the OAuth resource; the bridge
-authenticates against the base portal resource and exposes
-`portal_codemode_search` and `portal_codemode_execute`.
+Slant4D MCP uses Cloudflare Access OAuth through the portal. Code Mode uses the
+`mcp-remote` stdio bridge because Codex native HTTP MCP currently treats the
+query-string portal URL as the OAuth resource; the bridge authenticates against
+the base portal resource and exposes only `portal_codemode_search` and
+`portal_codemode_execute`. If `codex mcp list` still shows a direct `slant4d`
+server, remove the stale install and reinstall the Slant4D plugin.
 
 Update an existing Codex install:
 
@@ -129,9 +123,8 @@ codex plugin remove slant4d@personal
 
 Meshix is currently the only Claude Code plugin published in this repo.
 Slant4D is available to Claude Code through MCP setup in the Slant4D skill
-reference instead of a Claude plugin. Use the direct HTTP `slant4d` server for
-operator tools and the `mcp-remote` stdio `slant4d-codemode` server for the
-Cloudflare Code Mode portal.
+reference instead of a Claude plugin. Register only the `mcp-remote` stdio
+`slant4d-codemode` server for the Cloudflare Code Mode portal.
 
 Install from the GitHub marketplace source:
 
