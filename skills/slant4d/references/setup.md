@@ -44,7 +44,7 @@ portal correctly and exposes `portal_codemode_search` and
 
 ## Claude Code
 
-Run:
+Direct operator MCP:
 
 ```bash
 claude mcp add --transport http slant4d https://agents.slant4d.com/mcp
@@ -53,6 +53,20 @@ claude mcp add --transport http slant4d https://agents.slant4d.com/mcp
 Then start Claude Code, run `/mcp`, choose the `slant4d` server, and follow the
 browser login flow. Claude Code marks HTTP MCP servers as needing auth after a
 `401` or `403` response with OAuth metadata.
+
+Code Mode portal:
+
+```bash
+claude mcp add slant4d-codemode -- \
+  npx -y mcp-remote@latest \
+  'https://agents-portal.slant4d.com/mcp?codemode=search_and_execute'
+```
+
+Use the `mcp-remote` stdio bridge for Claude Code Mode too. Claude native HTTP
+MCP can start the OAuth flow for the portal, but non-interactive agent runs may
+only see `authenticate` and `complete_authentication` until browser auth
+finishes. The bridge exposes `portal_codemode_search` and
+`portal_codemode_execute` directly once its OAuth cache is valid.
 
 ## OpenCode
 
@@ -85,15 +99,16 @@ Pi has documented remote MCP OAuth support for this endpoint.
 ## Troubleshooting
 
 - Confirm the client is pointed at `https://agents.slant4d.com/mcp`.
-- For Code Mode in Codex, confirm `slant4d-codemode` is a stdio server that runs
-  `npx -y mcp-remote@latest` against the portal URL.
+- For Code Mode in Codex or Claude Code, confirm `slant4d-codemode` is a stdio
+  server that runs `npx -y mcp-remote@latest` against the portal URL.
 - A bare HTTP check should return `401` and include protected resource metadata;
   that is good reachability evidence, not a server outage.
 - Direct MCP tools appear as operator tools such as inventory, catalog, corpus,
   or lifecycle proof tools. Code Mode tools appear as `portal_codemode_search`
   and `portal_codemode_execute`; search returns JavaScript-safe upstream names
   such as `slant4d_agents_prod_inventory_listRecords`.
-- If a native Codex HTTP Code Mode entry times out or shows zero tools, replace
+- If a native HTTP Code Mode entry times out, shows zero tools, or only exposes
+  auth helper tools such as `authenticate` and `complete_authentication`, replace
   it with the `mcp-remote` stdio entry above.
 - If the browser opens, let the user finish the Cloudflare Access sign-in before
   retrying the MCP call.
