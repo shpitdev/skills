@@ -1,7 +1,7 @@
 {
   "name": "slant4d",
-  "version": "0.1.2",
-  "description": "Run Slant4D catalog, operator MCP, source-part readiness, and lifecycle proof workflows.",
+  "version": "0.1.3",
+  "description": "Run Slant4D catalog, source-part readiness, and lifecycle proof workflows through Cloudflare Code Mode.",
   "author": {
     "name": "SHPIT LLC",
     "url": "https://shpit.dev"
@@ -13,19 +13,19 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Slant4D",
-    "shortDescription": "Run Slant4D operator workflows.",
-    "longDescription": "Slant4D connects Codex to catalog-backed organizer insert workflows, including market evidence triage, upstream catalog resolution, operator MCP sync, source-part readiness, insert bundle readiness, and lifecycle proof planning.",
+    "shortDescription": "Run Slant4D Code Mode workflows.",
+    "longDescription": "Slant4D connects Codex to catalog-backed organizer insert workflows through Cloudflare Code Mode, including market evidence triage, upstream catalog resolution, source-part readiness, insert bundle readiness, and lifecycle proof planning.",
     "developerName": "SHPIT LLC",
     "category": "Productivity",
-    "capabilities": ["Operator MCP", "Catalog sync", "Lifecycle proof"],
+    "capabilities": ["Cloudflare Code Mode", "Catalog sync", "Lifecycle proof"],
     "websiteURL": "https://slant4d.com",
     "brandColor": "#FD00FC",
     "composerIcon": "./assets/logo-large.png",
     "logo": "./assets/logo-large.png",
     "defaultPrompt": [
-      "Inspect Slant4D operator inventory.",
+      "Inspect Slant4D Code Mode tools.",
       "Resolve a market insert case with Slant4D.",
-      "Set up Slant4D MCP in Codex."
+      "Set up Slant4D Code Mode in Codex."
     ]
   },
   "mcpServers": "./.mcp.json"

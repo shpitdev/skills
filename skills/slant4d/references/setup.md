@@ -6,29 +6,27 @@ OAuth, or asking how Slant4D operator MCP auth works.
 ## Agent Connection
 
 - Product: `https://slant4d.com`
-- Direct MCP endpoint: `https://agents.slant4d.com/mcp`
-- Code Mode portal: `https://agents-portal.slant4d.com/mcp?codemode=search_and_execute`
-- Auth: Cloudflare Access OAuth
+- Client MCP server: `slant4d-codemode`
+- Code Mode portal URL: `https://agents-portal.slant4d.com/mcp?codemode=search_and_execute`
+- Upstream MCP server, Cloudflare AI Controls only: `https://agents.slant4d.com/mcp`
+- Auth: Cloudflare Access OAuth through the portal
 
-Slant4D MCP uses OAuth. Do not ask the user for an API key, bearer token, or
-Cloudflare Access cookie, and do not suggest pasting secrets into chat. If an
-unauthenticated MCP request returns `401` with protected resource metadata, the
-endpoint is reachable and the next step is interactive sign-in from the MCP
-client.
+Register only the Code Mode portal with agent clients. The direct upstream
+endpoint is owned by Cloudflare AI Controls and should not be added to Codex,
+Claude Code, OpenCode, or other user-facing MCP configs from this skill. Adding
+it directly exposes every operator tool to the client and defeats Code Mode's
+small search/execute surface.
+
+Slant4D MCP uses OAuth. Do not ask the user for an API key, bearer token,
+Cloudflare Access cookie, or service token, and do not suggest pasting secrets
+into chat. If an unauthenticated MCP request returns `401` with protected
+resource metadata, the endpoint is reachable and the next step is interactive
+sign-in from the MCP client.
 
 ## Codex
 
-Direct operator MCP:
-
-```bash
-codex mcp add slant4d --url https://agents.slant4d.com/mcp
-codex mcp login slant4d
-```
-
-Use the normal Slant4D/Cloudflare Access login when the browser opens. The
-client should store and refresh OAuth credentials.
-
-Code Mode portal:
+The Slant4D Codex plugin registers this server automatically. To add it
+manually:
 
 ```bash
 codex mcp add slant4d-codemode -- \
@@ -37,24 +35,13 @@ codex mcp add slant4d-codemode -- \
 ```
 
 Use the `mcp-remote` stdio bridge for Codex Code Mode. Codex native HTTP MCP
-currently treats the query-string URL as the OAuth resource, while the portal
-expects the base MCP URL as its resource. The bridge authenticates against the
-portal correctly and exposes `portal_codemode_search` and
-`portal_codemode_execute`.
+can treat the query-string URL as the OAuth resource, while the portal expects
+the base MCP URL as its resource. The bridge authenticates against the portal
+correctly and exposes the portal Code Mode tools.
 
 ## Claude Code
 
-Direct operator MCP:
-
-```bash
-claude mcp add --transport http slant4d https://agents.slant4d.com/mcp
-```
-
-Then start Claude Code, run `/mcp`, choose the `slant4d` server, and follow the
-browser login flow. Claude Code marks HTTP MCP servers as needing auth after a
-`401` or `403` response with OAuth metadata.
-
-Code Mode portal:
+Add only the Code Mode portal:
 
 ```bash
 claude mcp add slant4d-codemode -- \
@@ -64,9 +51,8 @@ claude mcp add slant4d-codemode -- \
 
 Use the `mcp-remote` stdio bridge for Claude Code Mode too. Claude native HTTP
 MCP can start the OAuth flow for the portal, but non-interactive agent runs may
-only see `authenticate` and `complete_authentication` until browser auth
-finishes. The bridge exposes `portal_codemode_search` and
-`portal_codemode_execute` directly once its OAuth cache is valid.
+only see auth helper tools until browser auth finishes. The bridge exposes the
+portal Code Mode tools once its OAuth cache is valid.
 
 ## OpenCode
 
@@ -76,20 +62,56 @@ Add this to `opencode.json`:
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "slant4d": {
-      "type": "remote",
-      "url": "https://agents.slant4d.com/mcp",
+    "slant4d-codemode": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote@latest",
+        "https://agents-portal.slant4d.com/mcp?codemode=search_and_execute"
+      ],
       "enabled": true
     }
   }
 }
 ```
 
-OpenCode should prompt for OAuth on first use. To trigger auth immediately, run:
+OpenCode should run the local bridge and prompt for OAuth on first use.
 
-```bash
-opencode mcp auth slant4d
+## How Code Mode Works
+
+Clients should see only the portal Code Mode tools, usually named
+`portal_codemode_search` and `portal_codemode_execute`.
+
+Use search to inspect available upstream tools. `codemode.tools()` is available
+in the search sandbox:
+
+```js
+async () => {
+  const tools = await codemode.tools();
+  return tools.map((tool) => ({
+    name: tool.name,
+    rawName: tool.rawName,
+    params: Object.keys(tool.inputSchema?.properties || {})
+  }));
+}
 ```
+
+Use execute to call a JavaScript-safe upstream method name returned by search.
+`codemode.tools()` is not available in the execute sandbox:
+
+```js
+async () => {
+  return codemode.slant4d_agents_prod_catalog_pruneToSeed({
+    dryRun: true,
+    limit: 5
+  });
+}
+```
+
+Tool responses may be structured objects or MCP content blocks depending on the
+upstream operation. When the response is a text content block containing JSON,
+parse the `text` field before summarizing it.
 
 ## Pi
 
@@ -98,23 +120,27 @@ Pi has documented remote MCP OAuth support for this endpoint.
 
 ## Troubleshooting
 
-- Confirm the client is pointed at `https://agents.slant4d.com/mcp`.
-- For Code Mode in Codex or Claude Code, confirm `slant4d-codemode` is a stdio
-  server that runs `npx -y mcp-remote@latest` against the portal URL.
+- Confirm the client is pointed at the portal URL with
+  `?codemode=search_and_execute`.
+- Confirm `slant4d-codemode` is a stdio server that runs
+  `npx -y mcp-remote@latest` against the portal URL.
 - A bare HTTP check should return `401` and include protected resource metadata;
   that is good reachability evidence, not a server outage.
-- Direct MCP tools appear as operator tools such as inventory, catalog, corpus,
-  or lifecycle proof tools. Code Mode tools appear as `portal_codemode_search`
-  and `portal_codemode_execute`; search returns JavaScript-safe upstream names
-  such as `slant4d_agents_prod_inventory_listRecords`.
+- Expected visible tools are only `portal_codemode_search` and
+  `portal_codemode_execute`. Some clients may display those as search and
+  execute.
+- If catalog, corpus, inventory, or lifecycle proof tools appear directly in the
+  client tool list, an old direct `slant4d` MCP registration is still present.
+  Remove it and keep only `slant4d-codemode`.
 - If a native HTTP Code Mode entry times out, shows zero tools, or only exposes
-  auth helper tools such as `authenticate` and `complete_authentication`, replace
-  it with the `mcp-remote` stdio entry above.
+  auth helper tools, replace it with the `mcp-remote` stdio entry above.
+- If execute returns a re-authentication error, complete the portal OAuth flow
+  for the `mcp-remote` server and retry the same execute call.
 - If the browser opens, let the user finish the Cloudflare Access sign-in before
   retrying the MCP call.
 - If Claude Code does not open a browser, run `/mcp` and authenticate from that
   menu. If a redirect fails after sign-in, paste the full callback URL from the
   browser into Claude's URL prompt.
-- If OpenCode does not prompt automatically, run `opencode mcp auth slant4d`.
-- After sign-in, start with read-only operator tools such as inventory, catalog,
-  corpus validation, or diff tools before applying writes.
+- After sign-in, start with Code Mode search plus read-only upstream operations
+  such as inventory, catalog, corpus validation, or diff tools before applying
+  writes.
