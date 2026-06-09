@@ -60,11 +60,12 @@ codex plugin add tabex@shpitdev-skills
 
 Repeat the remove/add pair for `meshix` or `slant4d` when their bundled plugin
 version changes. Meshix may need `codex mcp login meshix` after install because
-it registers an OAuth-backed MCP server. Slant4D should register only
-`slant4d-codemode`; it exposes Cloudflare Code Mode as two JavaScript APIs,
-`portal_codemode_search` and `portal_codemode_execute`. If `codex mcp list`
-still shows a direct `slant4d` server, remove the stale install and reinstall
-the Slant4D plugin.
+it registers an OAuth-backed MCP server. Do not pass Meshix OAuth scopes
+manually; the live protected-resource metadata advertises the refresh-capable
+scopes. Slant4D should register only `slant4d-codemode`; it exposes Cloudflare
+Code Mode as two JavaScript APIs, `portal_codemode_search` and
+`portal_codemode_execute`. If `codex mcp list` still shows a direct `slant4d`
+server, remove the stale install and reinstall the Slant4D plugin.
 
 If `marketplace upgrade` says `shpitdev-skills` is not configured as a Git
 marketplace, the marketplace was added from a local path or stale snapshot. Fix
