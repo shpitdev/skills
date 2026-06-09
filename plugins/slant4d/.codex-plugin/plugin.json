@@ -14,7 +14,7 @@
   "interface": {
     "displayName": "Slant4D",
     "shortDescription": "Run Slant4D Code Mode workflows.",
-    "longDescription": "Slant4D connects Codex to catalog-backed organizer insert workflows through Cloudflare Code Mode, including market evidence triage, upstream catalog resolution, source-part readiness, insert bundle readiness, and lifecycle proof planning.",
+    "longDescription": "Slant4D connects Codex to catalog-backed organizer insert workflows through Cloudflare Code Mode search/execute runs, including market evidence triage, upstream catalog resolution, source-part readiness, insert bundle readiness, and lifecycle proof planning.",
     "developerName": "SHPIT LLC",
     "category": "Productivity",
     "capabilities": ["Cloudflare Code Mode", "Catalog sync", "Lifecycle proof"],

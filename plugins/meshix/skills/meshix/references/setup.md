@@ -57,8 +57,21 @@ giving up.
 
 ## Visual Review
 
-When a design has render images, save useful PNGs under `<cwd>/.memory/meshix/`
-using filenames that include the design id and view, such as
-`<design-id>-isometric.png`. If there is no useful working directory, use a temp
-directory. If the agent's chat can display local files, show the image with an
-absolute Markdown path so the user can inspect it inline.
+When a design has render images, download the actual image files before
+replying. Do not only paste signed image URLs, because they can expire and may
+not render inline in the harness.
+
+Save useful PNGs under `<cwd>/.memory/meshix/<design-id>/` with view-based
+filenames such as `isometric.png`, `top.png`, and `bottom.png`. If there is no
+useful working directory, use a temp directory. If the agent's chat can display
+local files, show the image with Markdown image syntax and an absolute path:
+
+```markdown
+![Meshix isometric render](/absolute/path/.memory/meshix/<design-id>/isometric.png)
+```
+
+For STEP, STL, plan, or render downloads, use the user's remembered artifact
+folder when the harness has persistent memory and a preference exists. If the
+preference is missing, ask once where they like Meshix CAD files saved, then use
+that location for future downloads when memory is available. Default to
+`<cwd>/.memory/meshix/<design-id>/` when no preference is available.

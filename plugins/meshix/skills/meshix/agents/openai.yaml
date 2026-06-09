@@ -4,7 +4,7 @@ interface:
   icon_small: "./assets/logo.svg"
   icon_large: "./assets/logo-large.png"
   brand_color: "#F9D544"
-  default_prompt: "Use $meshix to generate or review a Meshix CAD design."
+  default_prompt: "Use $meshix to find, generate, or review a Meshix CAD design."
 dependencies:
   tools:
     - type: "mcp"

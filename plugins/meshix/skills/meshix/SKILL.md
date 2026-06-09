@@ -12,8 +12,8 @@ Meshix-generated design.
 ## Start
 
 - For browser use, send the user to `https://meshix.app` or Meshix Studio.
-- For agent use, prefer the live Meshix MCP server when available. The public
-  endpoint is `https://meshix.app/mcp`.
+- For agent use, use the live Meshix MCP server first. The public endpoint is
+  `https://meshix.app/mcp`.
 - Before the first generation call in an MCP session, call `get_account_status`
   when present to confirm sign-in and backend health.
 - If the MCP server is available, use its current tool schemas as the contract.
@@ -35,6 +35,25 @@ Meshix-generated design.
   connector expectations are clear. Ask before choosing a side or retention
   strategy.
 
+## Discovery Requests
+
+When the user asks to find, list, search, open, inspect, or identify a Meshix
+design, design version, public gallery item, or prior run, treat that as a
+Meshix MCP discovery task.
+
+- Use Meshix MCP before web search or general STL sites.
+- Start with `get_account_status` when present, then use discovery tools such
+  as `list_designs` and `get_design` according to the live tool schemas.
+- Search the signed-in user's designs first when the wording suggests "my" or a
+  previous conversation. Search public Meshix designs when the wording suggests
+  a public/shared design or when private results are empty.
+- If the exact query has no MCP match, report the MCP-backed misses and the
+  closest MCP-backed candidates. Do not silently substitute a Thingiverse,
+  STLFinder, Printables, or other web result.
+- Use web search only when the user explicitly asks for non-Meshix web results,
+  or after saying Meshix MCP is unavailable and labeling the fallback as not
+  MCP-backed.
+
 ## Workflow
 
 1. Capture the physical intent: what the part does, what it attaches to, and
@@ -53,11 +72,23 @@ Meshix-generated design.
    orientation, thickness, access, and printability issues.
 6. Return the Studio design/run URL, not just the design id, so the user can
    inspect and continue the model interactively.
-7. When reviewing render images, save useful PNGs under
-   `<cwd>/.memory/meshix/` using filenames that include the design id and view,
-   such as `<design-id>-isometric.png`, then show them with an absolute Markdown
-   image path. Use a temp directory only when there is no useful working
-   directory.
+
+## Artifact Saving
+
+- When reviewing render images, download the actual PNG bytes to disk before
+  replying. Do not only return signed or temporary image URLs.
+- Save useful PNGs under `<cwd>/.memory/meshix/<design-id>/` using filenames
+  that include the view, such as `isometric.png`, `top.png`, and `bottom.png`.
+  Use a temp directory only when there is no useful working directory.
+- Show saved renders inline with Markdown image syntax and absolute paths, such
+  as `![Meshix isometric render](/absolute/path/.memory/meshix/<design-id>/isometric.png)`.
+- If the agent can download STEP, STL, or plan files and the harness has
+  persistent memory or preferences, ask once where the user likes Meshix CAD
+  artifacts saved. Remember that preference when the harness supports memory.
+- If no preference exists, save STEP, STL, plan, and render downloads under
+  `<cwd>/.memory/meshix/<design-id>/`. Report the saved file paths with the
+  Studio URL.
+- Do not store OAuth tokens, signed URL caches, or credentials in the repo.
 
 ## Review Standard
 

@@ -94,9 +94,11 @@ codex mcp add slant4d-codemode -- \
 Slant4D MCP uses Cloudflare Access OAuth through the portal. Code Mode uses the
 `mcp-remote` stdio bridge because Codex native HTTP MCP currently treats the
 query-string portal URL as the OAuth resource; the bridge authenticates against
-the base portal resource and exposes only `portal_codemode_search` and
-`portal_codemode_execute`. If `codex mcp list` still shows a direct `slant4d`
-server, remove the stale install and reinstall the Slant4D plugin.
+the base portal resource. Code Mode exposes the Cloudflare two-API JavaScript
+surface as `portal_codemode_search` and `portal_codemode_execute`: search
+discovers current tool names and schemas, execute runs JavaScript against those
+tools. If `codex mcp list` still shows a direct `slant4d` server, remove the
+stale install and reinstall the Slant4D plugin.
 
 Update an existing Codex install:
 

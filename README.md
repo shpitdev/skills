@@ -61,8 +61,8 @@ codex plugin add tabex@shpitdev-skills
 Repeat the remove/add pair for `meshix` or `slant4d` when their bundled plugin
 version changes. Meshix may need `codex mcp login meshix` after install because
 it registers an OAuth-backed MCP server. Slant4D should register only
-`slant4d-codemode`; it uses `mcp-remote` because Codex native HTTP MCP does not
-authenticate the query-string Code Mode portal correctly. If `codex mcp list`
+`slant4d-codemode`; it exposes Cloudflare Code Mode as two JavaScript APIs,
+`portal_codemode_search` and `portal_codemode_execute`. If `codex mcp list`
 still shows a direct `slant4d` server, remove the stale install and reinstall
 the Slant4D plugin.
 
@@ -127,9 +127,9 @@ copies stay byte-for-byte in sync with the canonical source.
 
 ## Meshix
 
-[Meshix](https://meshix.app) turns natural-language CAD briefs into printable
-3D artifacts through Studio and the Meshix MCP server. First-time agent setup
-starts at [meshix.app/agents](https://meshix.app/agents).
+[Meshix](https://meshix.app) finds, creates, and reviews printable 3D artifacts
+through Studio and the Meshix MCP server. First-time agent setup starts at
+[meshix.app/agents](https://meshix.app/agents).
 
 ![USB-C cable label tag generated with Meshix](skills/meshix/assets/examples/usb-c-tag-isometric.png)
 

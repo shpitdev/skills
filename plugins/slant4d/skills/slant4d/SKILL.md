@@ -21,6 +21,11 @@ state, or public/admin/gallery lifecycle proof.
   `assets/seeds/market_e2e_corpus.json`.
 - For first-time agent connection, OAuth, or MCP setup problems, read
   [setup.md](references/setup.md).
+- For Code Mode, use the Cloudflare MCP Portal endpoint documented in
+  [setup.md](references/setup.md). Code Mode is a two-API JavaScript surface:
+  search current tool definitions, then execute JavaScript against the
+  discovered tools. Do not register the upstream direct MCP endpoint from this
+  skill.
 - Treat competitor listings as prioritization evidence only. Do not copy
   competitor STLs/images, infer geometry truth from listings, or call geometry
   `PASS` without Slant4D review gates.
@@ -43,7 +48,7 @@ promotion evidence.
 
 ## Operator Workflow
 
-Prefer the Slant4D operator MCP/API over ad hoc database edits.
+Prefer Slant4D operator APIs through Code Mode over ad hoc database edits.
 
 - Start read-only: inspect inventory, validate the corpus, and diff before
   applying anything.
@@ -62,7 +67,10 @@ Useful operator surfaces, when present:
 - `catalog.getProduct`: read-only upstream product by MPN/canonical key.
 - `catalog.listProductImages`: read-only upstream image metadata.
 - `catalog.syncProducts`: idempotent sync for repo-owned desired MPNs.
+- `catalog.pruneToSeed`: dry-run-first cleanup for broad Milwaukee catalog
+  imports. Production pruning requires the tool's confirmation string.
 - `inventory.listRecords`: current target inventory. Start with summary mode.
+- `corpus.getManifest`: read-only checked-in corpus manifest lookup.
 - `corpus.validateManifest`: validate selected corpus cases against upstream.
 - `corpus.diffManifest`: read-only target diff.
 - `corpus.applyManifest`: idempotent target write.

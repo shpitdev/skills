@@ -1,6 +1,6 @@
 {
   "name": "meshix",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Create, route, and review Meshix CAD designs from Codex.",
   "author": {
     "name": "SHPIT LLC",
@@ -14,16 +14,17 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Meshix",
-    "shortDescription": "Generate and review Meshix CAD designs.",
-    "longDescription": "Meshix connects Codex to Meshix Studio and the Meshix MCP server for prompt-driven CAD generation, Gridfinity and Multiboard routing, artifact polling, and render review before a user prints anything.",
+    "shortDescription": "Find, generate, and review Meshix CAD designs.",
+    "longDescription": "Meshix connects Codex to Meshix Studio and the Meshix MCP server for design discovery, prompt-driven CAD generation, Gridfinity and Multiboard routing, artifact polling, and render review before a user prints anything.",
     "developerName": "SHPIT LLC",
     "category": "Productivity",
-    "capabilities": ["CAD generation", "MCP tools", "Artifact review"],
+    "capabilities": ["Design discovery", "CAD generation", "MCP tools", "Artifact review"],
     "websiteURL": "https://meshix.app",
     "brandColor": "#F9D544",
     "composerIcon": "./assets/logo-large.png",
     "logo": "./assets/logo-large.png",
     "defaultPrompt": [
+      "Find an existing Meshix design.",
       "Generate a printable part with Meshix.",
       "Review my Meshix design artifacts.",
       "Set up Meshix MCP in Codex."

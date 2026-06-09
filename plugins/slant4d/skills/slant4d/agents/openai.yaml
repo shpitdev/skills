@@ -1,6 +1,6 @@
 interface:
   display_name: "Slant4D"
-  short_description: "Slant4D Code Mode workflows"
+  short_description: "Slant4D Code Mode search/execute workflows"
   icon_small: "./assets/logo.svg"
   icon_large: "./assets/logo-large.png"
   brand_color: "#FD00FC"
@@ -9,7 +9,7 @@ dependencies:
   tools:
     - type: "mcp"
       value: "slant4d-codemode"
-      description: "Slant4D Cloudflare Code Mode portal; exposes only portal_codemode_search and portal_codemode_execute"
+      description: "Slant4D Cloudflare Code Mode search/execute portal"
       transport: "stdio"
       command: "npx"
       args:

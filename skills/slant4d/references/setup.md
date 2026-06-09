@@ -1,7 +1,7 @@
 # Slant4D Setup
 
 Read this only when the user is connecting an agent to Slant4D, debugging
-OAuth, or asking how Slant4D operator MCP auth works.
+OAuth, or asking how Slant4D Code Mode auth works.
 
 ## Agent Connection
 
@@ -34,10 +34,9 @@ codex mcp add slant4d-codemode -- \
   'https://agents-portal.slant4d.com/mcp?codemode=search_and_execute'
 ```
 
-Use the `mcp-remote` stdio bridge for Codex Code Mode. Codex native HTTP MCP
-can treat the query-string URL as the OAuth resource, while the portal expects
-the base MCP URL as its resource. The bridge authenticates against the portal
-correctly and exposes the portal Code Mode tools.
+Use the `mcp-remote` stdio bridge for Codex Code Mode. The bridge exposes the
+two Cloudflare Code Mode APIs as `portal_codemode_search` and
+`portal_codemode_execute`.
 
 ## Claude Code
 
@@ -49,10 +48,9 @@ claude mcp add slant4d-codemode -- \
   'https://agents-portal.slant4d.com/mcp?codemode=search_and_execute'
 ```
 
-Use the `mcp-remote` stdio bridge for Claude Code Mode too. Claude native HTTP
-MCP can start the OAuth flow for the portal, but non-interactive agent runs may
-only see auth helper tools until browser auth finishes. The bridge exposes the
-portal Code Mode tools once its OAuth cache is valid.
+Use the `mcp-remote` stdio bridge for Claude Code Mode too. The bridge exposes
+the two Cloudflare Code Mode APIs as `portal_codemode_search` and
+`portal_codemode_execute` once OAuth is complete.
 
 ## OpenCode
 
@@ -83,8 +81,8 @@ OpenCode should run the local bridge and prompt for OAuth on first use.
 Clients should see only the portal Code Mode tools, usually named
 `portal_codemode_search` and `portal_codemode_execute`.
 
-Use search to inspect available upstream tools. `codemode.tools()` is available
-in the search sandbox:
+Use search to inspect available upstream tools. Search code is JavaScript; a
+normal discovery call is:
 
 ```js
 async () => {
@@ -97,8 +95,7 @@ async () => {
 }
 ```
 
-Use execute to call a JavaScript-safe upstream method name returned by search.
-`codemode.tools()` is not available in the execute sandbox:
+Use execute to call a JavaScript-safe upstream method name returned by search:
 
 ```js
 async () => {
@@ -109,9 +106,20 @@ async () => {
 }
 ```
 
+Keep execute calls small and explicit. Prefer one case id, one MPN, one
+inventory kind, and bounded `limit` values. Run broad writes through dry-run
+first; for catalog cleanup, inspect `catalog.pruneToSeed({ dryRun: true })`
+before using the confirmation string.
+
 Tool responses may be structured objects or MCP content blocks depending on the
 upstream operation. When the response is a text content block containing JSON,
-parse the `text` field before summarizing it.
+parse the `text` field before summarizing it. Avoid combining expensive proof
+calls or broad record dumps in one execute call because they can timeout or
+truncate.
+
+Code Mode cannot write repo-local `.memory/` evidence by itself. When a tool
+returns a required local command, run that command from a local Slant4D checkout
+before calling it lifecycle proof.
 
 ## Pi
 
