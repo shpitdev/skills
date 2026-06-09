@@ -30,10 +30,20 @@ claude plugin marketplace add shpitdev/skills
 claude plugin install meshix@shpitdev-skills
 ```
 
-Codex has an explicit `codex mcp login meshix` command for OAuth. Claude Code
-handles HTTP MCP OAuth interactively on first use; if `claude mcp list` shows
-Meshix as `Needs authentication`, start an interactive Claude session and invoke
-a Meshix MCP-backed request so the browser sign-in flow can complete.
+Codex has an explicit OAuth login command:
+
+```bash
+codex mcp login meshix
+```
+
+Do not pass scopes manually. The live Meshix protected-resource metadata
+advertises `openid`, `profile`, `email`, and `offline_access`, and the OAuth
+authorization server advertises refresh-token support.
+
+Claude Code handles HTTP MCP OAuth interactively on first use; if `claude mcp
+list` shows Meshix as `Needs authentication`, start an interactive Claude
+session and invoke a Meshix MCP-backed request so the browser sign-in flow can
+complete.
 
 ## Auth Troubleshooting
 

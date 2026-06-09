@@ -41,8 +41,10 @@ codex mcp login meshix
 
 Codex plugin metadata marks Meshix auth as `ON_INSTALL`, so the Codex app can
 prompt during install. CLI installs may still need the explicit `codex mcp login
-meshix` step. A healthy unauthenticated install shows the `meshix` MCP server as
-enabled with OAuth; it is not ready to generate designs until OAuth completes.
+meshix` step. Do not pass scopes manually; the live Meshix protected-resource
+metadata advertises `openid`, `profile`, `email`, and `offline_access`. A
+healthy unauthenticated install shows the `meshix` MCP server as enabled with
+OAuth; it is not ready to generate designs until OAuth completes.
 
 ### Tabex
 
