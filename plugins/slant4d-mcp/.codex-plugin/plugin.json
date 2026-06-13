@@ -1,0 +1,32 @@
+{
+  "name": "slant4d-mcp",
+  "version": "0.1.0",
+  "description": "Run Slant4D direct Streamable HTTP MCP operator tools and prompts.",
+  "author": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "homepage": "https://slant4d.com",
+  "repository": "https://github.com/shpitdev/skills",
+  "license": "MIT",
+  "keywords": ["slant4d", "mcp", "3d-printing", "catalog"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Slant4D Direct MCP",
+    "shortDescription": "Run direct Slant4D MCP tools.",
+    "longDescription": "Slant4D Direct MCP connects Codex to the Worker Streamable HTTP MCP endpoint for operator health, catalog, inventory, corpus, and lifecycle proof tools plus prompt templates for audits, case sync, and lifecycle proof planning.",
+    "developerName": "SHPIT LLC",
+    "category": "Productivity",
+    "capabilities": ["Direct MCP tools", "MCP prompts", "Catalog sync", "Lifecycle proof"],
+    "websiteURL": "https://slant4d.com",
+    "brandColor": "#FD00FC",
+    "composerIcon": "./assets/logo-large.png",
+    "logo": "./assets/logo-large.png",
+    "defaultPrompt": [
+      "Check Slant4D direct MCP health.",
+      "Audit Slant4D operator inventory through MCP.",
+      "Run a Slant4D direct MCP corpus sync prompt."
+    ]
+  }
+}

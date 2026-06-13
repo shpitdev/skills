@@ -1,0 +1,14 @@
+interface:
+  display_name: "Slant4D Direct MCP"
+  short_description: "Run direct Slant4D operator MCP tools"
+  icon_small: "./assets/logo.svg"
+  icon_large: "./assets/logo-large.png"
+  brand_color: "#FD00FC"
+  default_prompt: "Use $slant4d-mcp to run direct Slant4D operator MCP tools and prompts for catalog, inventory, corpus, and lifecycle proof workflows."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "slant4d-direct"
+      description: "Slant4D direct Worker MCP server"
+      transport: "streamable_http"
+      url: "https://agents.slant4d.com/mcp"

@@ -1,31 +1,31 @@
 ---
-name: slant4d
-description: Use when working with Slant4D, the catalog-backed organizer insert product at slant4d.com, including market-derived corpus triage, upstream Milwaukee catalog resolution, operator MCP/API sync, source-part readiness, insert bundle readiness, and lifecycle proof planning.
+name: slant4d-mcp
+description: Use when working directly with the Slant4D Streamable HTTP MCP endpoint at agents.slant4d.com/mcp, including operator health, catalog, inventory, corpus, and lifecycle prompts/tools.
 ---
 
-# Slant4D
+# Slant4D Direct MCP
 
 Slant4D is a catalog-backed product for discovering, customizing, generating,
-and reviewing printable organizer inserts. Use this skill when the work starts
-from market insert evidence, upstream catalog products, Slant4D operator MCP/API
-state, or public/admin/gallery lifecycle proof.
+and reviewing printable organizer inserts. Use this skill when the agent has
+direct access to the Slant4D Worker MCP endpoint, not the Cloudflare Code Mode
+portal.
 
 ## Start
 
 - In a Slant4D repo, read the local `AGENTS.md` first. Project rules can be
   stricter than this skill.
 - Read the current Slant4D docs that govern the requested workflow before
-  mutating anything. For market/corpus work, start with `docs/operator_mcp.md`,
+  mutating anything. For operator work, start with `docs/operator_mcp.md`,
   `docs/upstream_product_data_consumption.md`,
   `docs/market_insert_landscape.md`, and
   `assets/seeds/market_e2e_corpus.json`.
-- For first-time agent connection, OAuth, or MCP setup problems, read
+- For first-time direct MCP connection, OAuth, or setup problems, read
   [setup.md](references/setup.md).
-- For Code Mode, use the Cloudflare MCP Portal endpoint documented in
-  [setup.md](references/setup.md). Code Mode is a two-API JavaScript surface:
-  search current tool definitions, then execute JavaScript against the
-  discovered tools. Do not register the upstream direct MCP endpoint from this
-  skill.
+- Confirm the MCP server is connected, then call `operator.health` before other
+  reads or writes.
+- If the client only shows `portal_codemode_search` and
+  `portal_codemode_execute`, use `$slant4d-codemode` instead. This skill is for
+  the direct top-level Slant4D MCP tools and prompts.
 - Treat competitor listings as prioritization evidence only. Do not copy
   competitor STLs/images, infer geometry truth from listings, or call geometry
   `PASS` without Slant4D review gates.
@@ -46,58 +46,68 @@ runtime dependency or source-part service. Slant4D should own selected images,
 generated artifacts, source-part review state, insert bundles, and gallery
 promotion evidence.
 
+## MCP Surface
+
+Production endpoint:
+
+```text
+https://agents.slant4d.com/mcp
+```
+
+Local dev endpoint:
+
+```text
+http://localhost:5177/mcp
+```
+
+Current direct MCP tools:
+
+- `operator.health`
+- `catalog.searchProducts`
+- `catalog.getProduct`
+- `catalog.listProductImages`
+- `catalog.syncProducts`
+- `catalog.pruneToSeed`
+- `inventory.listRecords`
+- `corpus.getManifest`
+- `corpus.validateManifest`
+- `corpus.diffManifest`
+- `corpus.applyManifest`
+- `proof.runLifecycleCase`
+
+Current direct MCP prompts:
+
+- `audit-environment`
+- `sync-corpus-case`
+- `prove-lifecycle-case`
+
+Prefer the prompt templates for the known audit, one-case sync, and lifecycle
+proof workflows when the client supports MCP prompts. Otherwise run the same
+sequence manually with the tools.
+
 ## Operator Workflow
 
-Prefer Slant4D operator APIs through Code Mode over ad hoc database edits.
-
-- Start read-only: inspect inventory, validate the corpus, and diff before
-  applying anything.
-- Keep environment identity tied to the operator endpoint/deployment. Do not add
-  a separate request-level environment selector.
+- Start read-only: call `operator.health`, inspect inventory, validate the
+  corpus, and diff before applying anything.
+- Keep environment identity tied to the MCP endpoint/deployment. Do not add a
+  separate request-level environment selector.
 - Use small, explicit scopes: one case id, one MPN, one inventory kind, and
   bounded limits unless the user explicitly asks for a broad audit.
+- Use `inventory.listRecords` with `kind="all"` and `mode="summary"` before
+  requesting bounded `mode="records"` output for a specific kind.
+- Use `corpus.diffManifest` with `mode="summary"` for broad audits, then
+  `mode="cases"` with `caseIds` for focused evidence.
 - Apply one corpus case at a time unless a broader write is explicitly
   requested.
 - Leave provider/source generation off unless the user explicitly approves that
   spend. Catalog/image sync should not silently start expensive generation.
-
-Useful operator surfaces, when present:
-
-- `catalog.searchProducts`: read-only upstream catalog search.
-- `catalog.getProduct`: read-only upstream product by MPN/canonical key.
-- `catalog.listProductImages`: read-only upstream image metadata.
-- `catalog.syncProducts`: idempotent sync for repo-owned desired MPNs.
-- `catalog.pruneToSeed`: dry-run-first cleanup for broad Milwaukee catalog
-  imports. Production pruning requires the tool's confirmation string.
-- `inventory.listRecords`: current target inventory. Start with summary mode.
-- `corpus.getManifest`: read-only checked-in corpus manifest lookup.
-- `corpus.validateManifest`: validate selected corpus cases against upstream.
-- `corpus.diffManifest`: read-only target diff.
-- `corpus.applyManifest`: idempotent target write.
-- `proof.runLifecycleCase`: prepare the local proof command; it is not the proof
-  evidence by itself.
+- Use `catalog.syncProducts` for repo-owned desired Milwaukee seed products.
+- Use `catalog.pruneToSeed` only dry-run first. Production pruning requires the
+  tool's confirmation string.
 
 If full raw evidence is needed, capture it to `.memory/` with a filesystem-capable
 local step and report the path plus a compact summary. Do not return huge raw
 catalog, inventory, diff, or apply payloads directly into chat.
-
-## Market And Corpus Triage
-
-Use model numbers as primary identity. Seller names for PackOut hosts and tool
-generations are inconsistent.
-
-For the first lifecycle/corpus work, prefer current single-source launch cases
-before broader market targets:
-
-- M12 Fuel impact driver in `48-22-8435`: `3453-20`
-- M12 Fuel hammer drill in `48-22-8435`: `3404-20`
-- M12 oscillating multi-tool in compact/deep organizer signal: `2526-20`
-- M12 Gen 2 drill in `48-22-8435`: `2504-20`
-
-Capability-gated market signals should stay out of launch proof until Slant4D
-has real support: multi-tool layouts, battery/charger arrays, Gridfinity bridges,
-low-profile templates, drawers, ammo-can/toolbox formats, and split-for-print-bed
-output.
 
 ## Sync A Case
 
@@ -125,16 +135,16 @@ Lifecycle proof should run only when the case is truthfully ready:
 - insert generation produced a complete bundle and review evidence;
 - public/admin/gallery states can be moved through the real lifecycle.
 
-Run the returned proof command from a local Slant4D checkout so `.memory/`
-evidence is written locally. A tool response, screenshot, or deployed page alone
-is not lifecycle proof.
+`proof.runLifecycleCase` prepares the repo command. Run that command from a local
+Slant4D checkout so `.memory/` evidence is written locally. A tool response,
+screenshot, or deployed page alone is not lifecycle proof.
 
 ## Verification
 
 - Docs/data-only changes: run the repo's formatter/check command and
   `git diff --check`.
-- Operator MCP/API changes: run the repo's operator worker verification and MCP
-  smoke commands.
+- Direct MCP changes: run the repo's operator worker verification and direct MCP
+  smoke commands for tools and prompts.
 - Source generation, insert generation, and lifecycle changes need targeted
   tests or proof scripts, then broader typecheck/test coverage when shared
   contracts changed.

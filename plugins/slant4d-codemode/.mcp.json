@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "slant4d-codemode": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@latest",
+        "https://agents-portal.slant4d.com/mcp?codemode=search_and_execute"
+      ],
+      "note": "Slant4D Cloudflare Code Mode portal. This exposes portal_codemode_search and portal_codemode_execute; Slant4D operations are JavaScript-callable codemode functions, not top-level client tools."
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "slant4d-codemode",
+  "version": "0.1.0",
+  "description": "Run Slant4D catalog, source-part readiness, and lifecycle proof workflows through Cloudflare Code Mode.",
+  "author": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "homepage": "https://slant4d.com",
+  "repository": "https://github.com/shpitdev/skills",
+  "license": "MIT",
+  "keywords": ["slant4d", "codemode", "mcp", "3d-printing", "catalog"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Slant4D API/Code Mode",
+    "shortDescription": "Run Slant4D Code Mode workflows.",
+    "longDescription": "Slant4D API/Code Mode connects Codex to catalog-backed organizer insert workflows through Cloudflare Code Mode search/execute runs and JSON operator APIs, including market evidence triage, upstream catalog resolution, source-part readiness, insert bundle readiness, and lifecycle proof planning.",
+    "developerName": "SHPIT LLC",
+    "category": "Productivity",
+    "capabilities": ["Cloudflare Code Mode", "Operator JSON API", "Catalog sync", "Lifecycle proof"],
+    "websiteURL": "https://slant4d.com",
+    "brandColor": "#FD00FC",
+    "composerIcon": "./assets/logo-large.png",
+    "logo": "./assets/logo-large.png",
+    "defaultPrompt": [
+      "Inspect Slant4D Code Mode functions.",
+      "Resolve a market insert case with Slant4D Code Mode.",
+      "Set up Slant4D API/Code Mode in Codex."
+    ]
+  }
+}
