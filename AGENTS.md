@@ -26,11 +26,15 @@ skill as prompt tuning for a capable model with no private project context.
 - `tabex`: Tabex is a browser workbench CLI at `https://tabex.dev`. The skill
   should help a user or agent install/check the CLI, inspect real browser
   sessions, run page actions or JavaScript, and preserve browser evidence.
-- `slant4d`: Slant4D is a catalog-backed organizer insert product at
-  `https://slant4d.com`. The skill should help a user or agent move from
-  market evidence to upstream catalog resolution, operator MCP/API sync,
-  source-part readiness, insert bundle readiness, and lifecycle proof without
-  treating competitor listings as geometry truth.
+- `slant4d-codemode`: Slant4D API/Code Mode is the Cloudflare Code Mode portal
+  and JSON operator API surface for `https://slant4d.com`. The skill should help
+  a user or agent move from market evidence to upstream catalog resolution,
+  operator API sync, source-part readiness, insert bundle readiness, and
+  lifecycle proof without treating competitor listings as geometry truth.
+- `slant4d-mcp`: Slant4D Direct MCP is the Streamable HTTP Worker MCP surface
+  for `https://slant4d.com`. The skill should cover direct MCP tools/prompts for
+  operator health, catalog, inventory, corpus, and lifecycle proof workflows
+  without drifting into Code Mode setup instructions.
 
 ## Validation
 

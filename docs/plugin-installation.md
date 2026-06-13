@@ -8,7 +8,8 @@ plugin system.
 ## Codex
 
 Codex plugins are published in this repo as `meshix@shpitdev-skills`,
-`tabex@shpitdev-skills`, and `slant4d@shpitdev-skills`.
+`tabex@shpitdev-skills`, `slant4d-codemode@shpitdev-skills`, and
+`slant4d-mcp@shpitdev-skills`.
 
 ### Meshix
 
@@ -60,20 +61,20 @@ skill guidance and UI metadata, but it does not install the Tabex CLI or registe
 an MCP server. Use the skill setup guidance when `command -v tabex` fails or the
 browser source is disconnected.
 
-### Slant4D
+### Slant4D API/Code Mode
 
 Install from the GitHub marketplace source:
 
 ```bash
 codex plugin marketplace add shpitdev/skills
-codex plugin add slant4d@shpitdev-skills
+codex plugin add slant4d-codemode@shpitdev-skills
 ```
 
 For PR or branch validation before merge:
 
 ```bash
 codex plugin marketplace add shpitdev/skills --ref <branch-or-tag>
-codex plugin add slant4d@shpitdev-skills
+codex plugin add slant4d-codemode@shpitdev-skills
 ```
 
 Verify the plugin and MCP server:
@@ -83,7 +84,7 @@ codex plugin list
 codex mcp list
 ```
 
-The Slant4D plugin registers only the Cloudflare Code Mode portal as
+The Slant4D API/Code Mode plugin registers only the Cloudflare Code Mode portal as
 `slant4d-codemode`. If an existing install does not show `slant4d-codemode`, add
 it explicitly:
 
@@ -93,14 +94,45 @@ codex mcp add slant4d-codemode -- \
   'https://agents-portal.slant4d.com/mcp?codemode=search_and_execute'
 ```
 
-Slant4D MCP uses Cloudflare Access OAuth through the portal. Code Mode uses the
-`mcp-remote` stdio bridge because Codex native HTTP MCP currently treats the
-query-string portal URL as the OAuth resource; the bridge authenticates against
-the base portal resource. Code Mode exposes the Cloudflare two-API JavaScript
-surface as `portal_codemode_search` and `portal_codemode_execute`: search
-discovers current tool names and schemas, execute runs JavaScript against those
-tools. If `codex mcp list` still shows a direct `slant4d` server, remove the
-stale install and reinstall the Slant4D plugin.
+Slant4D API/Code Mode uses Cloudflare Access OAuth through the portal. Code Mode
+uses the `mcp-remote` stdio bridge because Codex native HTTP MCP currently
+treats the query-string portal URL as the OAuth resource; the bridge
+authenticates against the base portal resource. Code Mode exposes the Cloudflare
+two-API JavaScript surface as `portal_codemode_search` and
+`portal_codemode_execute`: search discovers current function names and schemas,
+execute runs JavaScript against those functions. If `codex mcp list` still shows
+an old `slant4d` server, remove the stale install and install one of the split
+Slant4D plugins.
+
+### Slant4D Direct MCP
+
+Install from the GitHub marketplace source:
+
+```bash
+codex plugin marketplace add shpitdev/skills
+codex plugin add slant4d-mcp@shpitdev-skills
+codex mcp login slant4d-direct
+```
+
+For PR or branch validation before merge:
+
+```bash
+codex plugin marketplace add shpitdev/skills --ref <branch-or-tag>
+codex plugin add slant4d-mcp@shpitdev-skills
+```
+
+The Slant4D Direct MCP plugin registers the Worker Streamable HTTP endpoint as
+`slant4d-direct`:
+
+```bash
+codex mcp add slant4d-direct --url https://agents.slant4d.com/mcp
+codex mcp login slant4d-direct
+```
+
+Use this plugin only when the user wants top-level direct MCP tools such as
+`operator.health`, `catalog.syncProducts`, `inventory.listRecords`, and
+`proof.runLifecycleCase`. If the user wants Code Mode JavaScript execution, use
+`slant4d-codemode` instead.
 
 Update an existing Codex install:
 
@@ -110,8 +142,10 @@ codex plugin remove meshix@shpitdev-skills
 codex plugin add meshix@shpitdev-skills
 codex plugin remove tabex@shpitdev-skills
 codex plugin add tabex@shpitdev-skills
-codex plugin remove slant4d@shpitdev-skills
-codex plugin add slant4d@shpitdev-skills
+codex plugin remove slant4d-codemode@shpitdev-skills
+codex plugin add slant4d-codemode@shpitdev-skills
+codex plugin remove slant4d-mcp@shpitdev-skills
+codex plugin add slant4d-mcp@shpitdev-skills
 ```
 
 Remove old personal/local duplicates first if `codex plugin list` shows more
@@ -121,14 +155,18 @@ than one entry for the same plugin:
 codex plugin remove meshix@personal
 codex plugin remove tabex@personal
 codex plugin remove slant4d@personal
+codex plugin remove slant4d-codemode@personal
+codex plugin remove slant4d-mcp@personal
 ```
 
 ## Claude Code
 
 Meshix is currently the only Claude Code plugin published in this repo.
-Slant4D is available to Claude Code through MCP setup in the Slant4D skill
-reference instead of a Claude plugin. Register only the `mcp-remote` stdio
-`slant4d-codemode` server for the Cloudflare Code Mode portal.
+Slant4D is available to Claude Code through MCP setup in the split Slant4D skill
+references instead of Claude plugins. `$slant4d-codemode` registers the
+`mcp-remote` stdio `slant4d-codemode` server for the Cloudflare Code Mode
+portal. `$slant4d-mcp` registers the direct HTTP `slant4d-direct` server for
+top-level MCP tools.
 
 Install from the GitHub marketplace source:
 
@@ -201,7 +239,8 @@ Use local marketplace installs only while editing this checkout:
 codex plugin marketplace add .
 codex plugin add meshix@shpitdev-skills
 codex plugin add tabex@shpitdev-skills
-codex plugin add slant4d@shpitdev-skills
+codex plugin add slant4d-codemode@shpitdev-skills
+codex plugin add slant4d-mcp@shpitdev-skills
 claude plugin marketplace add . --scope local
 claude plugin install meshix@shpitdev-skills --scope local
 ```
@@ -212,7 +251,8 @@ Run the validators before publishing:
 bun run check
 uv run --with pyyaml python /Users/anandpant/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py "$PWD/plugins/meshix"
 uv run --with pyyaml python /Users/anandpant/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py "$PWD/plugins/tabex"
-uv run --with pyyaml python /Users/anandpant/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py "$PWD/plugins/slant4d"
+uv run --with pyyaml python /Users/anandpant/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py "$PWD/plugins/slant4d-codemode"
+uv run --with pyyaml python /Users/anandpant/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py "$PWD/plugins/slant4d-mcp"
 claude plugin validate "$PWD/plugins/meshix" --strict
 claude plugin validate "$PWD" --strict
 ```

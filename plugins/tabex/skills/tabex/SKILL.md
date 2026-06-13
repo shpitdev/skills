@@ -28,6 +28,10 @@ actions, execute JavaScript, and preserve network or page evidence.
 
 - Prefer Tabex primitives for sessions, pages, elements, network, runs, and
   JavaScript orchestration before writing bespoke browser automation.
+- Prefer page, element, and run-js selection flags for routine actions. Use
+  `session wait` or `session attach` only as lower-level sync/recovery helpers
+  when another browser flow, manual enablement, or an auto-attach rule is
+  expected to make the session appear.
 - A page must be enabled before Tabex can operate on it. Use an existing live
   session, ask the user to enable the tab from the extension popup, or create a
   narrowly scoped auto-attach rule when that is appropriate for the task. Remove

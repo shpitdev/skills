@@ -1,10 +1,10 @@
 interface:
-  display_name: "Slant4D"
-  short_description: "Slant4D Code Mode search/execute workflows"
+  display_name: "Slant4D API/Code Mode"
+  short_description: "Script Slant4D operator APIs through Code Mode"
   icon_small: "./assets/logo.svg"
   icon_large: "./assets/logo-large.png"
   brand_color: "#FD00FC"
-  default_prompt: "Use $slant4d to resolve market insert evidence against Slant4D catalog, source-part readiness, and lifecycle proof state through Cloudflare Code Mode."
+  default_prompt: "Use $slant4d-codemode to resolve market insert evidence against Slant4D catalog, source-part readiness, and lifecycle proof state through Cloudflare Code Mode or the operator JSON API."
 dependencies:
   tools:
     - type: "mcp"

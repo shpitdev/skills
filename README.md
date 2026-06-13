@@ -12,7 +12,8 @@ Install a skill with a compatible skills installer:
 ```bash
 npx skills add shpitdev/skills --skill tabex
 npx skills add shpitdev/skills --skill meshix
-npx skills add shpitdev/skills --skill slant4d
+npx skills add shpitdev/skills --skill slant4d-codemode
+npx skills add shpitdev/skills --skill slant4d-mcp
 ```
 
 For agents that read local Agent Skills directly, copy or install the folder
@@ -46,7 +47,8 @@ Install all Codex plugins:
 codex plugin marketplace add shpitdev/skills
 codex plugin add meshix@shpitdev-skills
 codex plugin add tabex@shpitdev-skills
-codex plugin add slant4d@shpitdev-skills
+codex plugin add slant4d-codemode@shpitdev-skills
+codex plugin add slant4d-mcp@shpitdev-skills
 codex mcp login meshix
 ```
 
@@ -58,14 +60,16 @@ codex plugin remove tabex@shpitdev-skills
 codex plugin add tabex@shpitdev-skills
 ```
 
-Repeat the remove/add pair for `meshix` or `slant4d` when their bundled plugin
-version changes. Meshix may need `codex mcp login meshix` after install because
-it registers an OAuth-backed MCP server. Do not pass Meshix OAuth scopes
-manually; the live protected-resource metadata advertises the refresh-capable
-scopes. Slant4D should register only `slant4d-codemode`; it exposes Cloudflare
-Code Mode as two JavaScript APIs, `portal_codemode_search` and
-`portal_codemode_execute`. If `codex mcp list` still shows a direct `slant4d`
-server, remove the stale install and reinstall the Slant4D plugin.
+Repeat the remove/add pair for `meshix`, `slant4d-codemode`, or `slant4d-mcp`
+when their bundled plugin version changes. Meshix may need `codex mcp login
+meshix` after install because it registers an OAuth-backed MCP server. Do not
+pass Meshix OAuth scopes manually; the live protected-resource metadata
+advertises the refresh-capable scopes. Slant4D API/Code Mode should register
+`slant4d-codemode`; it exposes Cloudflare Code Mode as two JavaScript APIs,
+`portal_codemode_search` and `portal_codemode_execute`. Slant4D Direct MCP
+should register `slant4d-direct`; it exposes the Worker MCP tools directly. If
+`codex mcp list` still shows an old `slant4d` server, remove the stale install
+and install one of the split Slant4D plugins.
 
 If `marketplace upgrade` says `shpitdev-skills` is not configured as a Git
 marketplace, the marketplace was added from a local path or stale snapshot. Fix
@@ -101,9 +105,9 @@ claude plugin marketplace add shpitdev/skills
 claude plugin install meshix@shpitdev-skills
 ```
 
-Slant4D does not currently publish a Claude Code plugin. Use the Slant4D setup
-reference for the Claude MCP command, which registers only the `mcp-remote` Code
-Mode bridge.
+Slant4D does not currently publish a Claude Code plugin. Use the relevant
+Slant4D setup reference: `$slant4d-codemode` registers the `mcp-remote` Code
+Mode bridge, while `$slant4d-mcp` registers the direct HTTP MCP endpoint.
 
 Connect Meshix in Claude.ai or Claude Desktop:
 
@@ -178,12 +182,21 @@ The extension refreshes signed asset URLs through `get_design_assets` and offers
 Pi-native actions to revise a design, open Studio, or open download links. It
 does not store render downloads or OAuth token state in the repository.
 
-## Slant4D
+## Slant4D API/Code Mode
 
 [Slant4D](https://slant4d.com) is a catalog-backed product for discovering,
-customizing, generating, and reviewing printable organizer inserts. The skill is
-tuned for market-derived corpus triage, upstream catalog resolution, operator
-MCP/API sync, source-part readiness, insert bundle readiness, and lifecycle proof
+customizing, generating, and reviewing printable organizer inserts. The
+`slant4d-codemode` skill is tuned for Cloudflare Code Mode and JSON operator API
+workflows: market-derived corpus triage, upstream catalog resolution, operator
+API sync, source-part readiness, insert bundle readiness, and lifecycle proof
+planning.
+
+## Slant4D Direct MCP
+
+The `slant4d-mcp` skill is tuned for direct Streamable HTTP MCP access to
+`https://agents.slant4d.com/mcp`. It covers top-level operator tools such as
+`operator.health`, catalog, inventory, corpus, and lifecycle proof calls plus
+direct MCP prompts for environment audit, corpus case sync, and lifecycle proof
 planning.
 
 ## Tabex

@@ -68,8 +68,9 @@ tabex auto-attach rule list
 tabex auto-attach rule remove --rule-id <id>
 ```
 
-`tabex session attach --wait` does not bypass that consent path; it only opens a
-tab and waits until the extension popup or an auto-attach rule enables it.
+`tabex session wait` and `tabex session attach --wait` do not bypass that consent
+path. They are lower-level sync helpers for tabs that will be enabled manually or
+by an auto-attach rule.
 
 ## Browser Profile
 

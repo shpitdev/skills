@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "slant4d-direct": {
+      "type": "http",
+      "url": "https://agents.slant4d.com/mcp",
+      "note": "Slant4D direct Worker MCP server. Uses Cloudflare Access auth and exposes top-level operator.health, catalog, inventory, corpus, and lifecycle proof tools plus direct MCP prompts."
+    }
+  }
+}
