@@ -18,11 +18,12 @@ actions, execute JavaScript, and preserve network or page evidence.
   command contract. Do not invent flags from memory.
 - Use `tabex getting-started` for current flow recipes, then verify the
   preconditions before running the listed commands.
-- Before browser interaction, run `tabex runtime status` and
-  `tabex session list`. Installed and configured does not mean connected: if the
-  runtime source is not connected or there are no live sessions, stop and report
-  the setup state unless you are allowed to enable a tab or add an auto-attach
-  rule.
+- Before browser interaction, run `tabex runtime status`,
+  `tabex browser source list`, and `tabex session list`. Installed and configured
+  does not mean connected. If the selected browser source is offline, follow the
+  connection recovery in [setup.md](references/setup.md); enabling a tab is not
+  connection repair. If the source is connected but has no live sessions, ask
+  the user to enable a tab or add a narrowly scoped auto-attach rule when allowed.
 
 ## Operating Model
 
@@ -32,6 +33,11 @@ actions, execute JavaScript, and preserve network or page evidence.
   `session wait` or `session attach` only as lower-level sync/recovery helpers
   when another browser flow, manual enablement, or an auto-attach rule is
   expected to make the session appear.
+- Session creation is reconnect-only by default. `session attach` and commands
+  that create through `--open-url` report the selected offline source and retry
+  or setup guidance; they do not implicitly launch Chrome or a configured
+  profile. Add `--launch-browser` only when the user explicitly wants that
+  creation action to launch the configured browser.
 - A page must be enabled before Tabex can operate on it. Use an existing live
   session, ask the user to enable the tab from the extension popup, or create a
   narrowly scoped auto-attach rule when that is appropriate for the task. Remove
@@ -50,6 +56,6 @@ actions, execute JavaScript, and preserve network or page evidence.
 End with evidence the user can trust: the selected session or page, the command
 that was run, the relevant output or captured artifact, and any remaining
 uncertainty. If Tabex is missing, stop at install guidance. If Tabex is
-installed but `tabex runtime status` reports the browser source disconnected or
-`tabex session list` has zero sessions, report that state rather than pretending
-browser inspection happened.
+installed but `tabex browser source list` reports the selected source offline,
+report that state separately from an empty `tabex session list` rather than
+pretending browser inspection happened.
