@@ -1,7 +1,8 @@
 # Tabex Setup
 
-Read this only when Tabex is missing, browser config is wrong, the extension
-needs to be installed or loaded, or the user explicitly asks for setup.
+Read this only when Tabex is missing, browser config is wrong, the Store
+extension or native host needs attention, a browser source is offline, or the
+user explicitly asks for setup.
 
 ## Install
 
@@ -11,55 +12,40 @@ The public install command from `https://tabex.dev` is:
 brew tap shpitdev/tap && brew install shpitdev/tap/tabex
 ```
 
-After install, run:
+Install the released extension from the
+[Chrome Web Store](https://chromewebstore.google.com/detail/bmfjindohmkokejlgpaemhlfenjajlmb).
+Tabex does not stage or sideload its production extension. Then run:
 
 ```bash
 tabex setup
+tabex browser native-host install
+tabex browser native-host status
 tabex runtime status
+tabex browser source list
 tabex session list
 ```
 
 Use `tabex setup --help` for current setup flags.
 
-## Chrome Extension
+## Connection Recovery
 
-Tabex installs the released Chrome extension into a managed local directory.
-The stable folder to load into Chrome is:
+Keep source connectivity and tab enablement separate:
 
-```text
-$HOME/.local/share/tabex/extensions/chrome/current
-```
+- `tabex browser source list` reports whether the enrolled Store extension is
+  connected. If the selected source is offline, ordinary `session attach` and
+  shared `--open-url` creation flows stay reconnect-only and report that source
+  plus retry or setup guidance.
+- `tabex browser native-host status` verifies the installed exact-origin native
+  host. After a CLI upgrade, or when the host is missing or stale, rerun
+  `tabex browser native-host install` and reload the Store extension.
+- The popup's **Retry connection** action asks the existing extension to
+  reconnect and never launches a browser. Endpoint recovery uses the native
+  host's canonical runtime state, with `http://127.0.0.1:7878` as the fallback.
+- Enabling a tab controls whether Tabex may operate on that page. It does not
+  start the runtime or repair an offline browser source.
 
-Recommended manual load flow:
-
-1. Run `tabex extension install` or `tabex setup`.
-2. Open the folder:
-
-   ```bash
-   open "$HOME/.local/share/tabex/extensions/chrome/current"
-   ```
-
-3. Open `chrome://extensions` in the Chrome profile Tabex is configured to use.
-4. Enable Developer Mode.
-5. Click "Load unpacked" and select the `current` folder, or drag the `current`
-   folder from Finder into the Chrome extensions page.
-6. If Tabex was already loaded, click Refresh on the existing Tabex extension.
-
-`tabex --help` may show `setup: configured` and an extension version even when
-Chrome has not loaded the unpacked extension. The decisive checks are:
-
-```bash
-tabex runtime status
-tabex session list
-```
-
-If they show `Source Connected: no`, `Connected: no`, or `Count: 0`, Tabex is not
-ready for browser interaction yet. Load or refresh the extension in the exact
-Chrome profile from `tabex browser config show`, then enable a tab from the
-extension popup or create a narrow auto-attach rule for the target host. Ask the
-user before changing browser extension state.
-
-For temporary smoke tests:
+Once the source is connected, enable the target tab from the extension popup or
+create a narrow auto-attach rule for the target host. For a temporary smoke test:
 
 ```bash
 tabex auto-attach rule add --host example.com --include-subdomains
@@ -69,8 +55,13 @@ tabex auto-attach rule remove --rule-id <id>
 ```
 
 `tabex session wait` and `tabex session attach --wait` do not bypass that consent
-path. They are lower-level sync helpers for tabs that will be enabled manually or
-by an auto-attach rule.
+path and do not launch the browser. For an explicitly requested browser launch,
+use `--launch-browser` on the creation action:
+
+```bash
+tabex session attach --url https://example.com --launch-browser --wait --timeout 15s
+tabex element click --open-url https://example.com --launch-browser --wait-timeout 15s --text "More information"
+```
 
 ## Browser Profile
 
