@@ -11,9 +11,14 @@ instructions; do not invent fields or copy tool schemas into the project.
 Every task, run, example and result is public. Only upload material the user
 can share publicly.
 
-1. Find the user's original prompt or Jev request and reviewed examples. Paste
-   the prompt string, chat-source object or raw Jev request into `create_task.source`
-   to queue reshape; don't invent a spec instead. Examples and mapping are optional
+1. Find the user's original prompt or Jev request and reviewed examples. For chat,
+   use `create_task.source` as `{kind: "chat", prompt: originalPrompt, inputs: [...]}`.
+   Declare the actual variables and JSON types from the app's call site, such as
+   `{name: "text", type: "string"}` for `{{text}}`; don't invent inputs. Ask the user
+   if the input contract is unclear. A bare prompt string is accepted but declares
+   no typed inputs, so template variables can cause rejection. Keep the original
+   prompt intact; raw Jev requests go in `source` unchanged. Don't invent a shaped
+   spec instead of letting reshape inspect it. Examples and mapping are optional
    for preview. Alternatively supply a shaped TaskSpec or a completed `from_run_id`;
    don't combine either with `source`. Keep the returned `edit_token` private in
    agent context; never print, log, put it in a URL or save it in the repository.
@@ -24,8 +29,10 @@ can share publicly.
    job with `update_task` and `cancel_job: true`, or retry a failed/cancelled current
    job with `retry_job: true`; both require `expected_revision` and a separate call.
    `cancel_run` is for runs, not reshape/label jobs.
-3. Show the completed proposal's questions, rules, label mapping and Mermaid
-   diagram. Get explicit approval or plain-language feedback. Send `feedback` with
+3. Present the completed proposal's actual question text, rules, label mapping
+   and Mermaid diagram in your reply before asking for approval. A task name,
+   artifact link or approval menu alone isn't a review. Get explicit approval
+   or plain-language feedback. Send `feedback` with
    `expected_revision: task.revision` separately from other edits, wait for the new
    reshape, then show its questions/diagram and get approval again. Feedback needs
    a completed proposal. Save structured edits first; record approval separately
@@ -46,15 +53,17 @@ can share publicly.
    simple.” Offer more first, but let the user proceed. At 100+, no count warning.
    Maximum 5,000; no score-only mode. Reshape preview is allowed at any count.
 6. Separately explain again that every task, run, example and result is public
-   and obtain public consent. Diagram approval alone isn't public consent. Start
+   and ask a separate public-consent question, not a combined approve-and-run
+   choice. Diagram approval alone isn't public consent. Start
    only an approved task without active engine jobs or blocking intake, using
    `optimize` with `public_ok: true`, then show its public link. `MIN_EXAMPLES`
    (needed 50, got N) is a refusal with the example-generation offer above;
    `FEW_EXAMPLES` (recommended 100, got N) is a warning, not a refusal. `BUSY` means
    try again shortly, not success: the refused request creates no partial task/job
    or approval. Don't hammer retries; reread the task before retrying an update.
-7. Use `get_run` with `wait_seconds` up to 30 and carry `next_sequence` into
-   `after_sequence`. Drain `has_more` without waiting. Continue to done, failed or
+7. Use `get_run` with `wait_seconds: 30` as the waiting mechanism; don't add long
+   shell sleeps between polls. Carry `next_sequence` into `after_sequence` and
+   drain `has_more` with `wait_seconds: 0` before resuming the bounded wait. Continue to done, failed or
    cancelled; report failures and unknown state honestly. On success, fetch
    `get_result` and inspect scores, missed examples, requests, rules, diagram,
    costs and artifacts. Null result is unavailable, not success.
