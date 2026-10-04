@@ -1,0 +1,31 @@
+{
+  "name": "dspy-decide",
+  "version": "0.1.0",
+  "description": "Optimize decision-model requests from reviewed labeled examples and integrate generated decide() code.",
+  "author": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "homepage": "https://dspy-decide.vercel.app/connect",
+  "repository": "https://github.com/shpitdev/skills",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "dspy-decide",
+    "shortDescription": "Optimize labeled decision tasks.",
+    "longDescription": "Review questions and labeled examples, approve public runs, compare scores and integrate generated decide() code.",
+    "developerName": "SHPIT LLC",
+    "category": "Engineering",
+    "capabilities": [
+      "Decision optimization",
+      "MCP tools",
+      "Generated code"
+    ],
+    "websiteURL": "https://dspy-decide.vercel.app",
+    "defaultPrompt": [
+      "Optimize my decision-model request with reviewed labeled examples.",
+      "Find a public decision run to reuse.",
+      "Connect dspy-decide to my coding agent."
+    ]
+  }
+}

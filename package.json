@@ -14,7 +14,8 @@
   },
   "pi": {
     "extensions": [
-      "./extensions/meshix/index.ts"
+      "./extensions/meshix/index.ts",
+      "./extensions/dspy-decide/index.js"
     ],
     "skills": [
       "./skills"

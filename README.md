@@ -238,3 +238,21 @@ present. It does not generate or rewrite skills.
 - Include only what helps a new model use the public app or tool.
 - Prefer live product docs, MCP metadata, or CLI `--help` over copied schemas.
 - Remove old scaffolding when the approach changes.
+
+## dspy-decide
+
+Optimize decision-model requests from reviewed labeled examples using
+`https://dspy-decide.vercel.app/mcp`. No sign-in is required; all data is public.
+
+```sh
+codex plugin marketplace add shpitdev/skills
+codex plugin add dspy-decide@shpitdev-skills
+claude plugin marketplace add shpitdev/skills
+claude plugin install dspy-decide@shpitdev-skills
+pi install https://github.com/shpitdev/skills
+```
+
+Pi 1.0+ loads the package's native MCP registration extension. For dspy-decide-only
+package filters, MCP-only setup, and verification, see
+[dspy-decide setup](skills/dspy-decide/references/setup.md). Use one registration
+per client. Restart after installation, verify eight tools, and browse the gallery.
