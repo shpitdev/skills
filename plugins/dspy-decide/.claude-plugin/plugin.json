@@ -1,0 +1,17 @@
+{
+  "name": "dspy-decide",
+  "version": "0.1.0",
+  "description": "Optimize decision-model requests from reviewed labeled examples and integrate generated decide() code.",
+  "author": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "homepage": "https://dspy-decide.vercel.app/connect",
+  "repository": "https://github.com/shpitdev/skills",
+  "mcpServers": {
+    "dspy_decide": {
+      "type": "http",
+      "url": "https://dspy-decide.vercel.app/mcp"
+    }
+  }
+}

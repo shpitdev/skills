@@ -17,6 +17,17 @@
       "category": "development",
       "source": "./plugins/meshix",
       "homepage": "https://meshix.app/agents"
+    },
+    {
+      "name": "dspy-decide",
+      "description": "Optimize decision-model requests from reviewed labeled examples and integrate decide() code.",
+      "author": {
+        "name": "SHPIT LLC",
+        "url": "https://shpit.dev"
+      },
+      "category": "development",
+      "source": "./plugins/dspy-decide",
+      "homepage": "https://dspy-decide.vercel.app/connect"
     }
   ]
 }

@@ -161,7 +161,7 @@ codex plugin remove slant4d-mcp@personal
 
 ## Claude Code
 
-Meshix is currently the only Claude Code plugin published in this repo.
+Meshix and dspy-decide have Claude Code plugins in this repo.
 Slant4D is available to Claude Code through MCP setup in the split Slant4D skill
 references instead of Claude plugins. `$slant4d-codemode` registers the
 `mcp-remote` stdio `slant4d-codemode` server for the Cloudflare Code Mode
@@ -260,3 +260,25 @@ claude plugin validate "$PWD" --strict
 Codex plugin packaging currently rejects skill and asset symlinks that point
 outside the plugin directory. Keep plugin bundles self-contained and let
 `bun run check` enforce that bundled skill files match `skills/<name>`.
+
+## dspy-decide
+
+Install `dspy-decide@shpitdev-skills` with the Codex or Claude Code marketplace
+commands in [setup](../skills/dspy-decide/references/setup.md). Pi 1.0+ uses the
+package's native MCP registration extension at `extensions/dspy-decide/index.js`.
+There is no OAuth step or API key. Do not put an edit token in HTTP headers.
+
+For PR validation, use the marketplace branch before installing the plugin:
+
+```sh
+codex plugin marketplace add shpitdev/skills --ref feat/dspy-decide-plugin
+claude plugin marketplace add shpitdev/skills@feat/dspy-decide-plugin --sparse .claude-plugin plugins
+```
+
+Validate the self-contained plugin and the complete marketplace:
+
+```sh
+bun run check
+claude plugin validate ./plugins/dspy-decide --strict
+claude plugin validate . --strict
+```
