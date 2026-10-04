@@ -74,7 +74,11 @@ can share publicly.
    drain `has_more` with `wait_seconds: 0` before resuming the bounded wait. Continue to done, failed or
    cancelled; report failures and unknown state honestly. On success, fetch
    `get_result` and inspect scores, missed examples, requests, rules, diagram,
-   costs and artifacts. Null result is unavailable, not success.
+   costs and artifacts. Null result is unavailable, not success. If
+   `result.selection.reason_code` is `as_given_at_ceiling`, tell the user the
+   original request was kept unchanged (no demonstrated gain); never describe it
+   as an improvement. Still integrate the retained request and generated `decide()`
+   as below.
 9. In a coding repository, save the request and generated Python or TypeScript
    `decide()` code, wire it into the intended call site and run relevant tests.
    In chat, return the request and artifacts.
