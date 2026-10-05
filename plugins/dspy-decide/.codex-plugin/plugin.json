@@ -6,7 +6,7 @@
     "name": "SHPIT LLC",
     "url": "https://shpit.dev"
   },
-  "homepage": "https://dspy-decide.vercel.app/connect",
+  "homepage": "https://www.evalclimb.com/connect",
   "repository": "https://github.com/shpitdev/skills",
   "mcpServers": "./.mcp.json",
   "interface": {
@@ -20,7 +20,7 @@
       "MCP tools",
       "Generated code"
     ],
-    "websiteURL": "https://dspy-decide.vercel.app",
+    "websiteURL": "https://www.evalclimb.com",
     "defaultPrompt": [
       "Optimize my decision-model request with reviewed labeled examples.",
       "Find a public decision run to reuse.",

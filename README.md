@@ -242,7 +242,7 @@ present. It does not generate or rewrite skills.
 ## dspy-decide
 
 Optimize decision-model requests from reviewed labeled examples using
-`https://dspy-decide.vercel.app/mcp`. No sign-in is required; all data is public.
+`https://www.evalclimb.com/mcp`. No sign-in is required; all data is public.
 
 ```sh
 codex plugin marketplace add shpitdev/skills
@@ -254,6 +254,6 @@ pi install https://github.com/shpitdev/skills
 
 Pi 1.0+ loads the package's native MCP registration extension. For dspy-decide-only
 package filters, MCP-only setup, and verification, see
-[dspy-decide connection setup](https://dspy-decide.vercel.app/connect). Use one registration
+[dspy-decide connection setup](https://www.evalclimb.com/connect). Use one registration
 per client. Restart after installation, verify eight tools, and browse the gallery.
 The plugin bundles only MCP configuration, not a skill; the server publishes the full workflow.
