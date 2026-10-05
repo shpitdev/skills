@@ -18,30 +18,54 @@ actions, execute JavaScript, and preserve network or page evidence.
   command contract. Do not invent flags from memory.
 - Use `tabex getting-started` for current flow recipes, then verify the
   preconditions before running the listed commands.
-- Before browser interaction, run `tabex runtime status`,
-  `tabex browser source list`, and `tabex session list`. Installed and configured
-  does not mean connected. If the selected browser source is offline, follow the
-  connection recovery in [setup.md](references/setup.md); enabling a tab is not
-  connection repair. If the source is connected but has no live sessions, ask
-  the user to enable a tab or add a narrowly scoped auto-attach rule when allowed.
+- Before browser interaction, run `tabex runtime status --json`,
+  `tabex browser source list --json`, and `tabex session list --json`.
+  Installed, connected, enabled, and command-ready are different states.
+
+## Select or Recover a Tab
+
+- If the selected source is offline, use the connection diagnostics in
+  [setup.md](references/setup.md). Tab enablement does not repair an offline source.
+- Reuse an authorized session that is attached and command-eligible. A nonzero
+  session count can include stale or reconnecting records; inspect their fields.
+- For an enabled but unattached/reconnecting target, try
+  `tabex session recover --session-id <id> --timeout 15s --json` once, then
+  recheck inventory and make one read-only page probe. Recovery output alone
+  does not prove page commands work. Honor another agent's browser ownership.
+- For an existing user tab within the requested browser scope, use
+  `tabex browser tab list --browser-id <id> --json`, then `session claim` with
+  that exact current browser ID, connection generation, and tab ID. Read its
+  `--help` first. Claim does not focus the tab; do not select unrelated tabs.
+- When a new tab fits the task, `session attach --url <url>` or a command's
+  `--open-url` creates an inactive, enabled Tabex-owned tab. Do not require a
+  manual popup click or a standing auto-attach rule for that creation path.
+  Keep its operation ID; use it to resume the same creation after uncertainty
+  rather than opening duplicates. Read `session creation --help` for recovery.
+- If inventory is unavailable, recovery has no current persistent binding, or
+  the page probe disconnects, diagnose transport using [setup.md](references/setup.md).
+  Do not ask the user to enable an already-enabled tab, add rules, or repeatedly
+  create tabs to repair transport. Stop after the bounded recovery fails and
+  report the exact error and source/session state.
+- Ask for a popup enablement action only when an appropriate existing tab
+  cannot be claimed with the installed CLI or the user's scope requires manual
+  selection. A login page is a separate authentication prerequisite, not an
+  enablement failure. Ask the user to sign in without collecting credentials.
 
 ## Operating Model
 
 - Prefer Tabex primitives for sessions, pages, elements, network, runs, and
   JavaScript orchestration before writing bespoke browser automation.
-- Prefer page, element, and run-js selection flags for routine actions. Use
-  `session wait` or `session attach` only as lower-level sync/recovery helpers
-  when another browser flow, manual enablement, or an auto-attach rule is
-  expected to make the session appear.
+- Prefer page, element, and run-js selection flags for routine actions.
+  `session wait` is only a barrier for an expected out-of-band session; it
+  does not enable a tab or repair transport.
 - Session creation is reconnect-only by default. `session attach` and commands
   that create through `--open-url` report the selected offline source and retry
   or setup guidance; they do not implicitly launch Chrome or a configured
   profile. Add `--launch-browser` only when the user explicitly wants that
   creation action to launch the configured browser.
-- A page must be enabled before Tabex can operate on it. Use an existing live
-  session, ask the user to enable the tab from the extension popup, or create a
-  narrowly scoped auto-attach rule when that is appropriate for the task. Remove
-  temporary rules after the smoke or workflow.
+- Use narrowly scoped auto-attach rules only when the workflow needs standing
+  enablement for matching tabs. Remove rules you created temporarily; preserve
+  pre-existing rules. Do not broaden browser access to fix a connection error.
 - Use JavaScript execution deliberately. Prefer host-side orchestration for
   repeatable work; use page-context JavaScript only when the browser page itself
   needs to evaluate something.
