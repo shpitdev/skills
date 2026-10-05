@@ -264,7 +264,7 @@ outside the plugin directory. Keep plugin bundles self-contained and let
 ## dspy-decide
 
 Install `dspy-decide@shpitdev-skills` with the Codex or Claude Code marketplace
-commands in [connection setup](https://dspy-decide.vercel.app/connect). Pi 1.0+ uses the
+commands in [connection setup](https://www.evalclimb.com/connect). Pi 1.0+ uses the
 package's native MCP registration extension at `extensions/dspy-decide/index.js`.
 The plugin has no bundled skill; follow the MCP server's instructions and tool schemas.
 There is no OAuth step or API key. Do not put an edit token in HTTP headers.

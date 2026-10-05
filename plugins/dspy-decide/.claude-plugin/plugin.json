@@ -6,12 +6,12 @@
     "name": "SHPIT LLC",
     "url": "https://shpit.dev"
   },
-  "homepage": "https://dspy-decide.vercel.app/connect",
+  "homepage": "https://www.evalclimb.com/connect",
   "repository": "https://github.com/shpitdev/skills",
   "mcpServers": {
     "dspy_decide": {
       "type": "http",
-      "url": "https://dspy-decide.vercel.app/mcp"
+      "url": "https://www.evalclimb.com/mcp"
     }
   }
 }

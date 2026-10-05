@@ -8,6 +8,6 @@ dependencies:
       value: "dspy_decide"
       description: "Public decision optimization tools"
       transport: "streamable_http"
-      url: "https://dspy-decide.vercel.app/mcp"
+      url: "https://www.evalclimb.com/mcp"
 policy:
   allow_implicit_invocation: true

@@ -2,7 +2,7 @@
   "mcpServers": {
     "dspy_decide": {
       "type": "http",
-      "url": "https://dspy-decide.vercel.app/mcp"
+      "url": "https://www.evalclimb.com/mcp"
     }
   }
 }
