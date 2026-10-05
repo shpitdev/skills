@@ -2,16 +2,19 @@
   "name": "@dspy-decide/plugin",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "keywords": [
     "pi-package"
   ],
+  "type": "module",
+  "nx": {
+    "name": "dspy-decide-plugin",
+    "tags": [
+      "scope:plugin"
+    ]
+  },
   "pi": {
     "extensions": [
       "./extensions/index.js"
-    ],
-    "skills": [
-      "./skills"
     ]
   }
 }
