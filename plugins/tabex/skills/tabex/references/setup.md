@@ -44,24 +44,44 @@ Keep source connectivity and tab enablement separate:
 - Enabling a tab controls whether Tabex may operate on that page. It does not
   start the runtime or repair an offline browser source.
 
-Once the source is connected, enable the target tab from the extension popup or
-create a narrow auto-attach rule for the target host. For a temporary smoke test:
+A connected source without usable sessions is not necessarily an enablement
+problem. Inspect JSON session state and current raw inventory:
 
 ```bash
-tabex auto-attach rule add --host example.com --include-subdomains
-tabex element click --open-url https://example.com --wait-timeout 15s --text "More information"
-tabex auto-attach rule list
-tabex auto-attach rule remove --rule-id <id>
+tabex session list --json
+tabex browser tab list --browser-id <id> --json
+tabex session recover --session-id <existing-enabled-id> --timeout 15s --json
 ```
 
-`tabex session wait` and `tabex session attach --wait` do not bypass that consent
-path and do not launch the browser. For an explicitly requested browser launch,
-use `--launch-browser` on the creation action:
+Use only the recovery command appropriate to the selected target. If inventory
+reports `browser_inventory_unavailable`, the source has not published current
+tabs. Pending extension observation with no current inventory, a missing
+persistent binding, or a page-command disconnect is not fixed by enablement. Capture the exact error and
+source/session IDs; after one bounded recovery and read-only probe fails, stop
+browser dispatch. Do not keep asking for popup enablement or repeat tab creation.
+Check runtime readiness and native-host status. Compare installed CLI and
+extension versions; `tabex --help` shows the CLI build. Do not restart the user's
+browser, replace its profile, reload the extension, or reinstall the host unless
+that recovery is within the user's authorization and the browser owner's scope.
+
+For a healthy connected source, choose an authorized existing tab with exact
+current-generation `session claim`, or open an enabled inactive owned tab:
 
 ```bash
-tabex session attach --url https://example.com --launch-browser --wait --timeout 15s
-tabex element click --open-url https://example.com --launch-browser --wait-timeout 15s --text "More information"
+tabex session claim --help
+tabex session attach --url https://example.com --browser-id <id> --wait --timeout 15s --json
 ```
+
+Owned-tab creation needs no standing rule or manual popup click. Keep the
+returned operation ID for same-operation recovery. Use temporary auto-attach
+rules only when matching future tabs need enablement; scope to the intended
+host/path and remove only the rules you created. `session wait` waits for an
+out-of-band session and does not enable a tab.
+
+Creation remains reconnect-only unless `--launch-browser` is explicit. Add
+that flag only when the user wants a browser launch; it may foreground Chrome.
+Neither creation nor enablement signs into a website. If the target redirects
+to login, report the authentication prerequisite separately.
 
 ## Browser Profile
 
@@ -80,4 +100,7 @@ tabex browser config set \
   --profile-directory Default
 ```
 
-Use the Chrome profile where the user has loaded the Tabex extension.
+Use the Chrome profile where the user has loaded the Tabex extension. Compare
+source-specific `configuredLaunchProfile` as well as the global saved config;
+a global launch-profile mismatch alone does not prove the connected source is
+wrong. Do not overwrite a profile configuration merely to remove a diagnostic.
