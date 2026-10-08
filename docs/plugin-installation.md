@@ -5,6 +5,39 @@ MCP server registration, marketplace updates, and app/plugin UI visibility.
 Use plain skill installation only when the target agent does not support this
 plugin system.
 
+## ChatGPT Web and Dots
+
+The Meshix marketplace bundle under `plugins/meshix` registers an MCP server
+for local agents. Uploading that bundle to ChatGPT does not make its tools
+available on the web: the plugin appears as **desktop only**.
+
+For web use, register Meshix as a hosted app:
+
+1. Open [ChatGPT Plugins](https://chatgpt.com/plugins), select **Add**, then
+   **Add custom MCP server**.
+2. Name it **Meshix**, use `https://meshix.app/mcp`, and select **OAuth**.
+3. Create the plugin and complete the Meshix sign-in flow.
+4. Open its menu and select **Download plugin ZIP**. Complete the browser's
+   Save dialog if downloads wait for a destination.
+
+To bundle the current skill into that hosted plugin, start from its exported
+ZIP. Preserve `.app.json` and the exact `name` in `.codex-plugin/plugin.json`;
+ChatGPT generates a technical name that can differ from the displayed Meshix
+name. Copy `plugins/meshix/skills/` and `plugins/meshix/assets/` into the package.
+Set `skills` to `./skills/`, keep `apps` pointing at `./.app.json`, increase the
+exported version, and copy the Meshix interface metadata from the repo manifest.
+Omit `mcpServers` and `.mcp.json` from this cloud package. Use the hosted plugin's
+**Upload new version** menu to upload the ZIP.
+
+Verify that the web detail page shows **Apps 1**, **Skills 1**, and **Try in
+chat**. Finish OAuth if the app still shows **Connect**. Then ask your Dot to
+call `get_account_status` and confirm its actual tool result; plugin visibility
+alone does not prove that the Dot can call Meshix.
+
+Keep account-specific hosted app IDs in personal packages, outside this public
+repo. See OpenAI's [plugin packaging guide](https://developers.openai.com/plugins/build/plugins)
+for registered app mappings and supported manifests.
+
 ## Codex
 
 Codex plugins are published in this repo as `meshix@shpitdev-skills`,
