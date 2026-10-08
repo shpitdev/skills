@@ -3,7 +3,7 @@
     "meshix": {
       "type": "http",
       "url": "https://meshix.app/mcp",
-      "note": "Meshix CAD MCP server. Uses OAuth and exposes design discovery, creation, explicit Assembly beta, clarification checkpoints, revisions, progress, and artifact downloads."
+      "note": "Meshix CAD MCP server. Uses OAuth and exposes owned design and published gallery discovery, list_public_history and get_public_history for Community History, creation, explicit Assembly beta, clarification checkpoints, revisions, progress, and artifact downloads."
     }
   }
 }

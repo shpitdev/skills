@@ -1,6 +1,6 @@
 ---
 name: meshix
-description: Use when helping someone find, create, revise, or review 3D CAD with Meshix at meshix.app, including Gridfinity, Multiboard, explicit Assembly beta requests, clarification recovery, and artifacts.
+description: Use when helping someone find, create, revise, or review 3D CAD with Meshix at meshix.app, including Community History, Gridfinity, Multiboard, explicit Assembly beta requests, clarification recovery, and artifacts.
 ---
 
 # Meshix
@@ -48,17 +48,30 @@ Meshix-generated design.
 ## Discovery Requests
 
 When the user asks to find, list, search, open, inspect, or identify a Meshix
-design, design version, public gallery item, or prior run, treat that as a
-Meshix MCP discovery task.
+design, design version, Community History entry, public gallery item, or prior
+run, treat that as a Meshix MCP discovery task.
 
 - Use Meshix MCP before web search or general STL sites.
-- Use `list_designs` with `scope="mine"` first. Unless the user asked for
-  private-only results, also check `scope="public"` when owned results are empty
-  or too few are relevant, and report which scopes you checked.
-- Use `get_design` for an owned design and `get_public_design` for a public
-  selected version. Use `get_design_history` for owned version/run history.
-  Carry returned opaque IDs into later calls; a display label such as v2 is
-  not a `version_id`.
+- For signed-out Studio History → Community, use `list_public_history`, then
+  `get_public_history` with a returned `design_id`. These read public prompts
+  and latest run progress or failure, including active and needs-attention runs
+  with no selected version. Community uses recent public-design visibility
+  windows; private designs and private history are excluded.
+- Use Community's `type` and `status` filters from the live schema, including
+  `in_progress` and `needs_attention`. Multiboard's history type is `multiboard`,
+  not the gallery's `board_mount`. Pass `next_cursor` unchanged with the same
+  filters; continue after short or empty pages until `next_cursor` is null.
+- For owned designs or gallery discovery, use `list_designs` with `scope="mine"`
+  first. Unless the user asked for private-only results, also check
+  `scope="public"` when owned results are empty or too few are relevant, and
+  report which scopes you checked. The published gallery is a subset of
+  historical work, but can include designs published by other users outside
+  recent Community or your owned History.
+- Use `get_design` for an owned design and `get_design_history` for owned
+  version/run history. `get_public_design` reads only a public selected or
+  published version; use `get_public_history` for Community runs without one.
+  History reads do not return signed download URLs. Carry returned opaque IDs
+  into later calls; a display label such as v2 is not a `version_id`.
 - If the exact query has no MCP match, report the MCP-backed misses and the
   closest MCP-backed candidates. Do not silently substitute a Thingiverse,
   STLFinder, Printables, or other web result.
