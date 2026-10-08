@@ -1,6 +1,6 @@
 {
   "name": "meshix",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Create, route, and review Meshix CAD designs from Codex.",
   "author": {
     "name": "SHPIT LLC",
@@ -15,10 +15,10 @@
   "interface": {
     "displayName": "Meshix",
     "shortDescription": "Find, generate, and review Meshix CAD designs.",
-    "longDescription": "Meshix connects Codex to Meshix Studio and the Meshix MCP server for design discovery, prompt-driven CAD generation, Gridfinity and Multiboard routing, artifact polling, and render review before a user prints anything.",
+    "longDescription": "Meshix connects Codex to Meshix Studio and the Meshix MCP server for owned and public design discovery, CAD generation, Gridfinity and Multiboard routing, explicit Assembly beta requests, clarification recovery, revisions, inline progress, and artifact review.",
     "developerName": "SHPIT LLC",
     "category": "Productivity",
-    "capabilities": ["Design discovery", "CAD generation", "MCP tools", "Artifact review"],
+    "capabilities": ["Design discovery", "CAD generation", "Assembly beta", "Clarification recovery", "Design revisions", "Inline progress", "Artifact review"],
     "websiteURL": "https://meshix.app",
     "brandColor": "#F9D544",
     "composerIcon": "./assets/logo-large.png",

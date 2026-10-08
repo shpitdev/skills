@@ -30,6 +30,25 @@ claude plugin marketplace add shpitdev/skills
 claude plugin install meshix@shpitdev-skills
 ```
 
+Update an existing Codex install from the Git-backed marketplace, then reinstall
+the plugin to load its new bundled version:
+
+```bash
+codex plugin marketplace upgrade shpitdev-skills
+codex plugin remove meshix@shpitdev-skills
+codex plugin add meshix@shpitdev-skills
+codex plugin list --marketplace shpitdev-skills
+```
+
+For Claude Code:
+
+```bash
+claude plugin marketplace update shpitdev-skills
+claude plugin update meshix@shpitdev-skills
+```
+
+Restart the agent session after updating so it loads the new skill and tools.
+
 Codex has an explicit OAuth login command:
 
 ```bash
@@ -58,18 +77,23 @@ complete.
 
 ## Long-Running Runs
 
-CAD generation can take a few minutes. Poll for status and artifacts every
-30-60 seconds. Stop on the top-level design state (`ready`, `needs_attention`,
-or a reported error). Treat run-level state changes, iteration counts, and
-progress labels as normal progress signals. If the agent blocks direct sleep
-commands, use its supported wait, monitor, or background task pattern instead of
-giving up.
+CAD generation can take a few minutes. Follow `get_design` on the returned
+cadence, normally every 30-60 seconds, until the run completes, errors, or needs
+action. A `needs_attention` result may require a clarification checkpoint;
+follow `get_clarification_checkpoint` and `continue_clarification_checkpoint`
+from the main skill instead of starting a replacement run.
+
+In an MCP Apps host, call `render_design_progress` with `design_id` and an
+optional `version_id`. A tool response does not prove the widget mounted.
+Leave a visibly mounted widget to auto-refresh; otherwise use `get_design`.
+If waiting is unavailable in the host, return the Studio link and explain the
+next status call needed.
 
 ## Visual Review
 
-When a design has render images, download the actual image files before
-replying. Do not only paste signed image URLs, because they can expire and may
-not render inline in the harness.
+Use the host's native image display when available. For supported downloads,
+call `get_design_assets` for fresh URLs and save actual files before presenting
+them as saved artifacts. Signed URLs can expire and may not render inline.
 
 Save useful PNGs under `<cwd>/.memory/meshix/<design-id>/` with view-based
 filenames such as `isometric.png`, `top.png`, and `bottom.png`. If there is no
