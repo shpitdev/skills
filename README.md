@@ -35,6 +35,14 @@ Repo-managed plugins live under `plugins/<name>` and are exposed through
 marketplace manifests for each harness. Prefer installing from the GitHub
 marketplace source for normal use.
 
+### ChatGPT Web and Dots
+
+Connect `https://meshix.app/mcp` through **Add custom MCP server** in
+[ChatGPT Plugins](https://chatgpt.com/plugins) with OAuth. The repo's Codex MCP
+bundle is desktop only when uploaded directly to ChatGPT. For the current skill
+plus web tools, update the exported hosted plugin while preserving its app
+mapping and technical package name; follow [ChatGPT Web and Dots](docs/plugin-installation.md#chatgpt-web-and-dots).
+
 ### Codex Plugins
 
 Use the GitHub marketplace source for normal installs. This creates a
