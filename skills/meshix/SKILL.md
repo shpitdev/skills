@@ -1,6 +1,6 @@
 ---
 name: meshix
-description: Use when helping someone create, inspect, or iterate on 3D CAD with Meshix at meshix.app, including Meshix Studio, Meshix MCP, Gridfinity, Multiboard, and artifact review.
+description: Use when helping someone find, create, revise, or review 3D CAD with Meshix at meshix.app, including Gridfinity, Multiboard, explicit Assembly beta requests, clarification recovery, and artifacts.
 ---
 
 # Meshix
@@ -27,13 +27,23 @@ Meshix-generated design.
 
 ## Routing
 
-- Use the general CAD path for open-ended parts: brackets, fixtures, enclosures,
-  adapters, gears, threads, trays, and one-off mechanical ideas.
-- Use Gridfinity only when the user gives the footprint units and height units,
-  or when they can confirm them. Gridfinity fit is physical fit; do not guess.
-- Use Multiboard only when the mount orientation, mount side, access side, and
-  connector expectations are clear. Ask before choosing a side or retention
-  strategy.
+- Use `prepare_cad_request` when routing or physical-fit inputs are unclear.
+  It does not start generation. Read its missing fields and recommended tool,
+  ask only for the information needed, and use its argument skeleton.
+- Use `create_3d_cad` for general prompt-driven CAD.
+- Use `create_3d_cad_gridfinity` only with known `length_u`, `width_u`, and
+  `height_u`. One footprint U is 42 mm; one height U is 7 mm. Do not guess fit.
+- Use `create_3d_cad_multiboard` only with known install orientation, mount side,
+  access side, connector layout, security, and pad mode. Ask before choosing a
+  side or retention strategy.
+- Assembly beta requires explicit user opt-in. Only then pass
+  `template_id="assembly"` to `prepare_cad_request` or `create_3d_cad`. Describe
+  the components, interfaces, relative placement, and separate component outputs.
+  Multi-part prose alone is not beta opt-in. Omit `template_id` for normal
+  auto-routing; typed Gridfinity and Multiboard tools do not accept it.
+- Omit model overrides unless the user requests one. Follow the live model
+  schema; CLIProxy generation uses CLIProxy grading, so leave `grading_model`
+  unset for a CLIProxy generation model.
 
 ## Discovery Requests
 
@@ -42,11 +52,13 @@ design, design version, public gallery item, or prior run, treat that as a
 Meshix MCP discovery task.
 
 - Use Meshix MCP before web search or general STL sites.
-- Start with `get_account_status` when present, then use discovery tools such
-  as `list_designs` and `get_design` according to the live tool schemas.
-- Search the signed-in user's designs first when the wording suggests "my" or a
-  previous conversation. Search public Meshix designs when the wording suggests
-  a public/shared design or when private results are empty.
+- Use `list_designs` with `scope="mine"` first. Unless the user asked for
+  private-only results, also check `scope="public"` when owned results are empty
+  or too few are relevant, and report which scopes you checked.
+- Use `get_design` for an owned design and `get_public_design` for a public
+  selected version. Use `get_design_history` for owned version/run history.
+  Carry returned opaque IDs into later calls; a display label such as v2 is
+  not a `version_id`.
 - If the exact query has no MCP match, report the MCP-backed misses and the
   closest MCP-backed candidates. Do not silently substitute a Thingiverse,
   STLFinder, Printables, or other web result.
@@ -60,23 +72,52 @@ Meshix MCP discovery task.
    what must fit.
 2. Ask for dimensions, clearances, material or printer constraints, and mounting
    context when those affect the result.
-3. Use the narrowest Meshix surface that fits the request. If the request is
-   under-specified, make one short clarification pass before generating.
-4. Expect generation to take a few minutes. Poll the design status every 30-60
-   seconds, and stop on the top-level design state: `ready`,
-   `needs_attention`, or a reported error. Treat run-level state changes,
-   iterations, and progress labels as normal progress signals. If the agent
-   blocks direct sleep commands, use its supported wait, monitor, or background
-   task pattern instead of giving up.
-5. After generation, review the resulting artifacts for obvious fit,
-   orientation, thickness, access, and printability issues.
-6. Return the Studio design/run URL, not just the design id, so the user can
-   inspect and continue the model interactively.
+3. Prepare and create through the route above. Keep the returned `design_id`,
+   `run_id`, and `studio_url` and follow the run without another user prompt.
+4. Poll `get_design` on the returned cadence, normally every 30-60 seconds,
+   until the run completes, errors, or requires action. Treat iterations and
+   progress labels as normal progress. Use the host's supported wait or monitor
+   if direct sleep is unavailable. Report active progress briefly.
+5. In a host with MCP Apps UI, `render_design_progress` can show an inline
+   widget. Pass `design_id` and optionally `version_id`, never `run_id`. Only
+   visible host confirmation proves it mounted. Leave a mounted widget visible
+   to auto-refresh; otherwise follow the returned polling guidance with
+   `get_design`.
+6. If the run needs clarification, follow the checkpoint workflow below.
+   Report an error or Studio-only action with its returned reason and link.
+7. On completion, use `get_design_assets` for fresh download URLs and inspect
+   the renders and relevant CAD artifacts for fit, thickness, orientation,
+   access, and printability. Asset readiness is separate from run completion;
+   report missing outputs rather than claiming they exist.
+8. Return the Studio design/run URL and the reviewed result. Use `version_id`
+   when inspecting or downloading an exact historical result.
+
+## Clarification and Revisions
+
+- For an owned run requiring clarification, call `get_clarification_checkpoint`
+  with its exact `design_id` and `run_id`. Present the saved questions and use
+  the returned `checkpoint_id` unchanged.
+- Call `continue_clarification_checkpoint` with the current required action:
+  `answer_questions` needs a complete answer for each saved question;
+  `retry_review` retries a failed review; `start_run` activates the prepared run.
+  Follow each returned `next_action`. Do not replace the design or run to bypass
+  a checkpoint, and do not invent answers.
+- For `legacy_recovery` or `restart_typed_setup`, use the returned Studio link.
+- Use `revise_design` for a completed owned result. Revisions preserve its
+  generation family; create a new design when the family must change. Omitted
+  model overrides retain the parent's model and effort.
+- Use `fork_public_design` when the user asks to revise a public selected
+  version into their own design. Pass its exact public `version_id`; the source
+  stays unchanged and Assembly is inherited only from an Assembly parent.
+- Follow queued revisions and forks through the same progress and artifact
+  workflow. If the user asks to cancel, `cancel_job` supports active owned
+  Assembly jobs only; use the returned `job_id`.
 
 ## Artifact Saving
 
-- When reviewing render images, download the actual PNG bytes to disk before
-  replying. Do not only return signed or temporary image URLs.
+- Use the host's native artifact or image display when available. When saving
+  downloads is supported, fetch fresh URLs through `get_design_assets` and save
+  the actual bytes. Signed URLs expire; do not treat them as permanent files.
 - Save useful PNGs under `<cwd>/.memory/meshix/<design-id>/` using filenames
   that include the view, such as `isometric.png`, `top.png`, and `bottom.png`.
   Use a temp directory only when there is no useful working directory.
@@ -88,6 +129,11 @@ Meshix MCP discovery task.
 - If no preference exists, save STEP, STL, plan, and render downloads under
   `<cwd>/.memory/meshix/<design-id>/`. Report the saved file paths with the
   Studio URL.
+- For Assembly, include the available composed outputs and separate component
+  artifacts the user needs, including 3MF and intent/manifest evidence. Keep
+  returned version, part, and attempt identifiers with saved files so different
+  results are not confused. Public downloads cover the public selected version;
+  use `scope="public"` and its exact `version_id`.
 - Do not store OAuth tokens, signed URL caches, or credentials in the repo.
 
 ## Review Standard
