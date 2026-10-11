@@ -3,17 +3,7 @@
   "mcpServers": {
     "meshix": {
       "type": "streamable-http",
-      "url": "https://meshix.app/mcp",
-      "extensions": {
-        "com.openai": {
-          "auth": {
-            "type": "oauth",
-            "client": {
-              "mode": "cimd"
-            }
-          }
-        }
-      }
+      "url": "https://meshix.app/mcp"
     }
   }
 }
