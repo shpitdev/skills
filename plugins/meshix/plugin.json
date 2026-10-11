@@ -1,0 +1,51 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "meshix",
+  "version": "0.1.6",
+  "description": "Create, route, and review Meshix CAD designs through Studio and the Meshix MCP server.",
+  "author": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "homepage": "https://meshix.app/agents",
+  "repository": "https://github.com/shpitdev/skills",
+  "license": "MIT",
+  "keywords": [
+    "cad",
+    "meshix",
+    "mcp",
+    "3d-printing"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Meshix",
+        "shortDescription": "Create and inspect 3D CAD",
+        "longDescription": "Create and inspect CAD designs with Meshix. Find owned designs, published gallery designs, and Community History. Prepare a dimensioned request, generate or revise CAD, review progress, and inspect 3D previews, CAD renders, STL and STEP outputs. Sign in to Meshix to connect your account. Generation is asynchronous; generated artifacts do not guarantee physical fit or manufacturing safety. Assembly is a beta feature requiring explicit opt-in.",
+        "developerName": "SHPIT LLC",
+        "category": "Productivity",
+        "capabilities": [
+          "Design discovery",
+          "Community History",
+          "CAD generation",
+          "Assembly beta",
+          "Clarification recovery",
+          "Design revisions",
+          "Inline progress",
+          "Artifact review"
+        ],
+        "websiteURL": "https://meshix.app",
+        "composerIcon": "./assets/logo-large.png",
+        "logo": "./assets/logo-large.png",
+        "defaultPrompt": [
+          "Show my Meshix designs.",
+          "Open the public Meshix bridge riser design.",
+          "Help prepare a Meshix CAD design from my dimensions."
+        ],
+        "supportURL": "https://meshix.app/support",
+        "privacyPolicyURL": "https://meshix.app/privacy",
+        "termsOfServiceURL": "https://meshix.app/terms"
+      }
+    }
+  }
+}

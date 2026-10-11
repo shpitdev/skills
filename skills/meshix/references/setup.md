@@ -77,17 +77,18 @@ complete.
 
 ## Long-Running Runs
 
-CAD generation can take a few minutes. Follow `get_design` on the returned
-cadence, normally every 30-60 seconds, until the run completes, errors, or needs
-action. A `needs_attention` result may require a clarification checkpoint;
-follow `get_clarification_checkpoint` and `continue_clarification_checkpoint`
-from the main skill instead of starting a replacement run.
+CAD generation can take a few minutes. After creating, revising, or forking,
+call `render_design_progress` once with the returned `next_tool_args`. It accepts
+`design_id` and optional `version_id`, never `run_id`. Summarize the status
+briefly and include the Studio link without commenting on whether the host
+displayed a card.
 
-In an MCP Apps host, call `render_design_progress` with `design_id` and an
-optional `version_id`. A tool response does not prove the widget mounted.
-Leave a visibly mounted widget to auto-refresh; otherwise use `get_design`.
-If waiting is unavailable in the host, return the Studio link and explain the
-next status call needed.
+Follow any `action_required` instruction before ending the turn. A
+`needs_attention` result may require saved clarification questions or a
+Studio-only recovery path; follow the returned action and wait for the user's
+answers when needed. For passive progress, end the turn and call `get_design`
+when the user asks for status. Never start an automatic polling loop or promise
+automatic updates or completion notifications.
 
 ## Visual Review
 
