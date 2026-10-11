@@ -41,9 +41,9 @@ Meshix-generated design.
   the components, interfaces, relative placement, and separate component outputs.
   Multi-part prose alone is not beta opt-in. Omit `template_id` for normal
   auto-routing; typed Gridfinity and Multiboard tools do not accept it.
-- Omit model overrides unless the user requests one. Follow the live model
-  schema; CLIProxy generation uses CLIProxy grading, so leave `grading_model`
-  unset for a CLIProxy generation model.
+- Omit model overrides unless the user requests one. When choosing a model,
+  use only CLIProxy generation options from the live schema. CLIProxy generation
+  uses CLIProxy grading, so leave `grading_model` unset.
 
 ## Discovery Requests
 
@@ -86,18 +86,19 @@ run, treat that as a Meshix MCP discovery task.
 2. Ask for dimensions, clearances, material or printer constraints, and mounting
    context when those affect the result.
 3. Prepare and create through the route above. Keep the returned `design_id`,
-   `run_id`, and `studio_url` and follow the run without another user prompt.
-4. Poll `get_design` on the returned cadence, normally every 30-60 seconds,
-   until the run completes, errors, or requires action. Treat iterations and
-   progress labels as normal progress. Use the host's supported wait or monitor
-   if direct sleep is unavailable. Report active progress briefly.
-5. In a host with MCP Apps UI, `render_design_progress` can show an inline
-   widget. Pass `design_id` and optionally `version_id`, never `run_id`. Only
-   visible host confirmation proves it mounted. Leave a mounted widget visible
-   to auto-refresh; otherwise follow the returned polling guidance with
-   `get_design`.
-6. If the run needs clarification, follow the checkpoint workflow below.
+   `run_id`, and `studio_url`.
+4. After creating, revising, or forking, call `render_design_progress` once with
+   the returned `next_tool_args`. It accepts `design_id` and optional
+   `version_id`, never `run_id`. The host may present an interactive progress
+   card; summarize the status briefly and include the Studio link without
+   commenting on whether the card appeared.
+5. Follow any `action_required` instruction before ending the turn. If the run
+   needs clarification, use the checkpoint workflow below and present the saved
+   questions. Do not invent answers or bypass the checkpoint.
    Report an error or Studio-only action with its returned reason and link.
+6. For a queued or active run with no required action, end the turn. Call
+   `get_design` when the user asks for status. Never start an automatic polling
+   loop or promise automatic updates or completion notifications.
 7. On completion, use `get_design_assets` for fresh download URLs and inspect
    the renders and relevant CAD artifacts for fit, thickness, orientation,
    access, and printability. Asset readiness is separate from run completion;
