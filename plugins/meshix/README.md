@@ -1,8 +1,9 @@
 # Meshix
 
-Meshix helps you find, create, revise, and inspect 3D CAD designs through
-[Meshix Studio](https://meshix.app) and the Meshix MCP server. Review design
-progress, CAD previews, and available STL, STEP, render, and Assembly outputs.
+Create, revise, and inspect 3D CAD models of physical parts with
+[Meshix Studio](https://meshix.app) and the Meshix MCP server. Find your designs
+and public designs, then review design progress, CAD previews, and available
+STL, STEP, render, and Assembly outputs.
 Generation is asynchronous; inspect the result before printing or using a part.
 Assembly is a beta feature that requires explicit opt-in.
 
@@ -19,6 +20,20 @@ For Codex:
 ```bash
 codex plugin marketplace add shpitdev/skills
 codex plugin add meshix@shpitdev-skills
+```
+
+To update, refresh the marketplace and reinstall the plugin, then restart the
+session:
+
+```bash
+codex plugin marketplace upgrade shpitdev-skills
+codex plugin remove meshix@shpitdev-skills
+codex plugin add meshix@shpitdev-skills
+```
+
+```bash
+claude plugin marketplace update shpitdev-skills
+claude plugin update meshix@shpitdev-skills
 ```
 
 Connect to **https://meshix.app/mcp** and complete OAuth sign-in with your Meshix

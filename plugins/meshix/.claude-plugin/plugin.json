@@ -1,7 +1,7 @@
 {
   "name": "meshix",
-  "version": "0.1.6",
-  "description": "Create, route, and review Meshix CAD designs through Studio and the Meshix MCP server.",
+  "version": "0.1.7",
+  "description": "Create, revise, and inspect 3D CAD models of physical parts with Meshix.",
   "author": {
     "name": "SHPIT LLC",
     "url": "https://shpit.dev"

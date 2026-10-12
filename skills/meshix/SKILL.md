@@ -41,9 +41,9 @@ Meshix-generated design.
   the components, interfaces, relative placement, and separate component outputs.
   Multi-part prose alone is not beta opt-in. Omit `template_id` for normal
   auto-routing; typed Gridfinity and Multiboard tools do not accept it.
-- Omit model overrides unless the user requests one. When choosing a model,
-  use only CLIProxy generation options from the live schema. CLIProxy generation
-  uses CLIProxy grading, so leave `grading_model` unset.
+- Omit `generation_model` and `grading_model` unless the user requests an
+  override; then use only exact ids from the live schema and follow its
+  guidance.
 
 ## Discovery Requests
 
@@ -73,10 +73,7 @@ run, treat that as a Meshix MCP discovery task.
   History reads do not return signed download URLs. Carry returned opaque IDs
   into later calls; a display label such as v2 is not a `version_id`.
 - If the exact query has no MCP match, report the MCP-backed misses and the
-  closest MCP-backed candidates. Do not silently substitute a Thingiverse,
-  STLFinder, Printables, or other web result.
-- Use web search only when the user explicitly asks for non-Meshix web results,
-  or after saying Meshix MCP is unavailable and labeling the fallback as not
+  closest MCP-backed candidates. Label any result from outside Meshix as not
   MCP-backed.
 
 ## Workflow
@@ -127,28 +124,21 @@ run, treat that as a Meshix MCP discovery task.
   workflow. If the user asks to cancel, `cancel_job` supports active owned
   Assembly jobs only; use the returned `job_id`.
 
-## Artifact Saving
+## Artifacts
 
-- Use the host's native artifact or image display when available. When saving
-  downloads is supported, fetch fresh URLs through `get_design_assets` and save
-  the actual bytes. Signed URLs expire; do not treat them as permanent files.
-- Save useful PNGs under `<cwd>/.memory/meshix/<design-id>/` using filenames
-  that include the view, such as `isometric.png`, `top.png`, and `bottom.png`.
-  Use a temp directory only when there is no useful working directory.
-- Show saved renders inline with Markdown image syntax and absolute paths, such
-  as `![Meshix isometric render](/absolute/path/.memory/meshix/<design-id>/isometric.png)`.
-- If the agent can download STEP, STL, or plan files and the harness has
-  persistent memory or preferences, ask once where the user likes Meshix CAD
-  artifacts saved. Remember that preference when the harness supports memory.
-- If no preference exists, save STEP, STL, plan, and render downloads under
-  `<cwd>/.memory/meshix/<design-id>/`. Report the saved file paths with the
-  Studio URL.
+- Use the host's native artifact or image display when available.
+  `get_design_assets` returns fresh signed URLs. They expire; do not present
+  them as permanent files.
+- Save STEP, STL, plan, or render files only when the user asks, to a location
+  they choose. Report the saved paths with the Studio URL. If the chat displays
+  local images, show a saved render with Markdown image syntax and its absolute
+  path.
 - For Assembly, include the available composed outputs and separate component
   artifacts the user needs, including 3MF and intent/manifest evidence. Keep
   returned version, part, and attempt identifiers with saved files so different
   results are not confused. Public downloads cover the public selected version;
   use `scope="public"` and its exact `version_id`.
-- Do not store OAuth tokens, signed URL caches, or credentials in the repo.
+- Never write OAuth tokens or credentials to files.
 
 ## Review Standard
 

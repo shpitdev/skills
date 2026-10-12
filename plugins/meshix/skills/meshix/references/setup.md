@@ -14,55 +14,20 @@ token into chat. If an unauthenticated MCP request returns `401` with protected
 resource metadata, that usually means the endpoint is reachable and the next
 step is interactive sign-in or client auth setup.
 
-## Plugin Install
+The user signs in through their agent client:
 
-When the user wants the full plugin, not only the standalone skill, prefer the
-GitHub marketplace source:
+- Codex: the user runs `codex mcp login meshix`.
+- Claude Code: OAuth starts on first use. If `claude mcp list` shows Meshix as
+  `Needs authentication`, the user starts an interactive Claude session and
+  makes a Meshix request so the browser sign-in flow can complete.
 
-```bash
-codex plugin marketplace add shpitdev/skills
-codex plugin add meshix@shpitdev-skills
-codex mcp login meshix
-```
+Do not pass scopes manually; the client reads them from the Meshix OAuth
+metadata.
 
-```bash
-claude plugin marketplace add shpitdev/skills
-claude plugin install meshix@shpitdev-skills
-```
-
-Update an existing Codex install from the Git-backed marketplace, then reinstall
-the plugin to load its new bundled version:
-
-```bash
-codex plugin marketplace upgrade shpitdev-skills
-codex plugin remove meshix@shpitdev-skills
-codex plugin add meshix@shpitdev-skills
-codex plugin list --marketplace shpitdev-skills
-```
-
-For Claude Code:
-
-```bash
-claude plugin marketplace update shpitdev-skills
-claude plugin update meshix@shpitdev-skills
-```
-
-Restart the agent session after updating so it loads the new skill and tools.
-
-Codex has an explicit OAuth login command:
-
-```bash
-codex mcp login meshix
-```
-
-Do not pass scopes manually. The live Meshix protected-resource metadata
-advertises `openid`, `profile`, `email`, and `offline_access`, and the OAuth
-authorization server advertises refresh-token support.
-
-Claude Code handles HTTP MCP OAuth interactively on first use; if `claude mcp
-list` shows Meshix as `Needs authentication`, start an interactive Claude
-session and invoke a Meshix MCP-backed request so the browser sign-in flow can
-complete.
+For plugin install or update steps, point the user to the
+[plugin installation guide](https://github.com/shpitdev/skills/blob/main/docs/plugin-installation.md).
+After an update, the user restarts the agent session so it loads the new skill
+and tools.
 
 ## Auth Troubleshooting
 
@@ -92,21 +57,6 @@ automatic updates or completion notifications.
 
 ## Visual Review
 
-Use the host's native image display when available. For supported downloads,
-call `get_design_assets` for fresh URLs and save actual files before presenting
-them as saved artifacts. Signed URLs can expire and may not render inline.
-
-Save useful PNGs under `<cwd>/.memory/meshix/<design-id>/` with view-based
-filenames such as `isometric.png`, `top.png`, and `bottom.png`. If there is no
-useful working directory, use a temp directory. If the agent's chat can display
-local files, show the image with Markdown image syntax and an absolute path:
-
-```markdown
-![Meshix isometric render](/absolute/path/.memory/meshix/<design-id>/isometric.png)
-```
-
-For STEP, STL, plan, or render downloads, use the user's remembered artifact
-folder when the harness has persistent memory and a preference exists. If the
-preference is missing, ask once where they like Meshix CAD files saved, then use
-that location for future downloads when memory is available. Default to
-`<cwd>/.memory/meshix/<design-id>/` when no preference is available.
+Use the host's native image display when available. `get_design_assets` returns
+fresh signed URLs; they expire and may not render inline. Save files only when
+the user asks, to a location they choose, and report the saved paths.

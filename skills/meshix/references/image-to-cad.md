@@ -15,12 +15,11 @@ prompt.
    critical dimension when physical fit matters.
 3. For unknown tools, accessories, replacement parts, adapters, washers, mounts,
    or mating hardware, identify the exact object before generating. Ask for the
-   brand, model number, part number, and the user's photo or sketch. If web
-   access is available, research public product pages, manuals, parts diagrams,
-   or replacement listings to confirm the name and approximate dimensions.
-   Meshix itself cannot search the web, so the agent must do that research or
-   ask the user. Treat candidate part names as hypotheses until the user,
-   manual, or listing confirms them.
+   brand, model number, part number, and the user's photo, sketch, or
+   measurements. If the user asks you to look the part up, use public product
+   pages, manuals, or parts diagrams to confirm its name and approximate
+   dimensions. Treat candidate part names as hypotheses until the user, manual,
+   or listing confirms them.
 4. Confirm with the user that both sides are talking about the same part before
    generating when the object is ambiguous or must mate with real hardware.
 5. Translate decorative or visual elements into CAD language: raised relief,
