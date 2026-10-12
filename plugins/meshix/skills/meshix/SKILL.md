@@ -108,12 +108,13 @@ run, treat that as a Meshix MCP discovery task.
 - For an owned run requiring clarification, call `get_clarification_checkpoint`
   with its exact `design_id` and `run_id`. Present the saved questions and use
   the returned `checkpoint_id` unchanged.
-- Call `continue_clarification_checkpoint` with the current required action:
-  `answer_questions` needs a complete answer for each saved question;
-  `retry_review` retries a failed review; `start_run` activates the prepared run.
-  Follow each returned `next_action`. Do not replace the design or run to bypass
-  a checkpoint, and do not invent answers.
-- For `legacy_recovery` or `restart_typed_setup`, use the returned Studio link.
+- Call the tool its `next_action` names with the same `design_id`, `run_id`,
+  and `checkpoint_id`: `answer_clarification_questions` saves a complete answer
+  for each saved question; `retry_clarification_review` retries a failed
+  review; `start_clarified_run` starts the prepared run. Follow each returned
+  `next_action`. Do not replace the design or run to bypass a checkpoint, and
+  do not invent answers.
+- For `restart_typed_setup`, use the returned Studio link.
 - Use `revise_design` for a completed owned result. Revisions preserve its
   generation family; create a new design when the family must change. Omitted
   model overrides retain the parent's model and effort.
