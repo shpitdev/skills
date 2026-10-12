@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "meshix",
-      "description": "Create, route, and review Meshix CAD designs through Studio and the Meshix MCP server.",
+      "description": "Create, revise, and inspect 3D CAD models of physical parts with Meshix.",
       "author": {
         "name": "SHPIT LLC",
         "url": "https://shpit.dev"

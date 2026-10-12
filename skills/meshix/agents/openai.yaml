@@ -1,6 +1,6 @@
 interface:
   display_name: "Meshix"
-  short_description: "Route and review Meshix CAD work"
+  short_description: "Create and review 3D CAD in Meshix"
   icon_small: "./assets/logo.svg"
   icon_large: "./assets/logo-large.png"
   default_prompt: "Use $meshix to find, generate, or review a Meshix CAD design."

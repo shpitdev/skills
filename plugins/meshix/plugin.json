@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "meshix",
-  "version": "0.1.6",
-  "description": "Create, route, and review Meshix CAD designs through Studio and the Meshix MCP server.",
+  "version": "0.1.7",
+  "description": "Create, revise, and inspect 3D CAD models of physical parts with Meshix.",
   "author": {
     "name": "SHPIT LLC",
     "url": "https://shpit.dev"
@@ -21,9 +21,9 @@
       "interface": {
         "displayName": "Meshix",
         "shortDescription": "Create and inspect 3D CAD",
-        "longDescription": "Create and inspect CAD designs with Meshix. Find owned designs, published gallery designs, and Community History. Prepare a dimensioned request, generate or revise CAD, review progress, and inspect 3D previews, CAD renders, STL and STEP outputs. Sign in to Meshix to connect your account. Generation is asynchronous; generated artifacts do not guarantee physical fit or manufacturing safety. Assembly is a beta feature requiring explicit opt-in.",
+        "longDescription": "Create, revise, and inspect 3D CAD models of physical parts with Meshix. Describe a part and its dimensions, then generate or revise CAD, follow progress, and review 3D previews, CAD renders, and STL and STEP outputs. Find your designs, published gallery designs, and Community History. Sign in to Meshix to connect your account. Generation is asynchronous; generated artifacts do not guarantee physical fit or manufacturing safety. Assembly is a beta feature requiring explicit opt-in.",
         "developerName": "SHPIT LLC",
-        "category": "Productivity",
+        "category": "Creativity",
         "capabilities": [
           "Design discovery",
           "Community History",
