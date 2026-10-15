@@ -63,6 +63,8 @@ actions, execute JavaScript, and preserve network or page evidence.
   or setup guidance; they do not implicitly launch Chrome or a configured
   profile. Add `--launch-browser` only when the user explicitly wants that
   creation action to launch the configured browser.
+- Choose task readiness from observed page state. Tabex's network-idle condition
+  is an optional quiet-period check, not universal application readiness.
 - Use narrowly scoped auto-attach rules only when the workflow needs standing
   enablement for matching tabs. Remove rules you created temporarily; preserve
   pre-existing rules. Do not broaden browser access to fix a connection error.
@@ -74,6 +76,26 @@ actions, execute JavaScript, and preserve network or page evidence.
   data.
 - Prefer real browser targets for meaningful validation. Toy pages are fine for
   smoke checks, but they are weak proof for product behavior.
+
+## Report Tabex Defects
+
+When normal use reveals a likely Tabex defect, preserve available evidence and,
+before the final reply, delegate a bounded reporting task to an available
+sub-agent or worker. Filing evidence-backed defects in `shpitdev/tabex` with the
+user's existing GitHub access is part of this workflow; do not ask permission
+again. If delegation is unavailable, file directly.
+
+- Distinguish usage mistakes and target-site behavior from likely Tabex defects;
+  deep diagnosis is not required, and root cause may remain unknown.
+- Search existing issues and reuse a matching issue instead of duplicating it;
+  otherwise file one issue per distinct defect.
+- Include version/environment, exact command, expected versus observed behavior,
+  error/exit status, reproduction steps and frequency if known, and sanitized
+  supporting evidence. Never publish credentials or raw sensitive page/capture data.
+- Keep the task to reporting: no unsolicited implementation, browser ownership
+  transfer, or broad debugging project.
+- Return issue links in the final reply. If GitHub access fails, return the
+  prepared report and exact blocker; do not claim filing succeeded.
 
 ## Verification
 
