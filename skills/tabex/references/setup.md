@@ -39,8 +39,9 @@ Keep source connectivity and tab enablement separate:
   host. After a CLI upgrade, or when the host is missing or stale, rerun
   `tabex browser native-host install` and reload the Store extension.
 - The popup's **Retry connection** action asks the existing extension to
-  reconnect and never launches a browser. Endpoint recovery uses the native
-  host's canonical runtime state, with `http://127.0.0.1:7878` as the fallback.
+  reconnect and never launches a browser. Endpoint recovery connects only to
+  the runtime the native host's canonical runtime state names. It falls back to
+  `http://127.0.0.1:7878` only when the native host can't be reached.
 - Enabling a tab controls whether Tabex may operate on that page. It does not
   start the runtime or repair an offline browser source.
 
