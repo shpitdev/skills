@@ -11,6 +11,7 @@ Install a skill with a compatible skills installer:
 
 ```bash
 npx skills add shpitdev/skills --skill tabex
+npx skills add shpitdev/skills --skill frontierclimb
 npx skills add shpitdev/skills --skill meshix
 npx skills add shpitdev/skills --skill slant4d-codemode
 npx skills add shpitdev/skills --skill slant4d-mcp
@@ -206,6 +207,12 @@ The `slant4d-mcp` skill is tuned for direct Streamable HTTP MCP access to
 `operator.health`, catalog, inventory, corpus, and lifecycle proof calls plus
 direct MCP prompts for environment audit, corpus case sync, and lifecycle proof
 planning.
+
+## Frontierclimb
+
+The `frontierclimb` skill covers graded evals for agent-facing products: writing
+cases, combining deterministic checks with a judge, tuning against a holdout
+split without overfitting, and evaluating products that write.
 
 ## Tabex
 
