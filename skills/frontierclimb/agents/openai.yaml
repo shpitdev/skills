@@ -1,0 +1,6 @@
+interface:
+  display_name: "Frontierclimb"
+  short_description: "Design and read graded evals without overfitting"
+  default_prompt: "Use $frontierclimb to plan an eval or tune against graded results."
+policy:
+  allow_implicit_invocation: true

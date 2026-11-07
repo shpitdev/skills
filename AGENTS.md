@@ -20,6 +20,10 @@ skill as prompt tuning for a capable model with no private project context.
 
 ## Skills
 
+- `frontierclimb`: Frontierclimb grades agent-facing products (CLIs, MCP and
+  Code Mode servers, HTTP APIs) on real tasks. The skill should help a user or
+  agent design cases and grading, tune against results without overfitting, and
+  evaluate products that write, without describing how the grader is built.
 - `meshix`: Meshix is a public 3D CAD product at `https://meshix.app`. The skill
   should help a user or agent create, route, and review Meshix CAD work through
   Studio or the Meshix MCP server without relying on private repo context.
