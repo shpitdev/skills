@@ -1,0 +1,14 @@
+interface:
+  display_name: "Sketchi"
+  short_description: "Draw editable Excalidraw diagrams with Sketchi"
+  icon_small: "./assets/logo.svg"
+  default_prompt: "Use $sketchi to draw our release approval flow as a flowchart."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "sketchi-code-mode"
+      description: "Sketchi Code Mode MCP server"
+      transport: "streamable_http"
+      url: "https://playground.sketchi.app/mcp"
+policy:
+  allow_implicit_invocation: true

@@ -40,6 +40,12 @@ skill as prompt tuning for a capable model with no private project context.
   operator health, catalog, inventory, corpus, and lifecycle proof workflows
   without drifting into Code Mode setup instructions.
 
+- `sketchi`: Sketchi draws editable Excalidraw diagrams at `https://sketchi.app`
+  through its public MCP server. Its body mirrors
+  `.agents/skills/sketchi-code-mode/SKILL.md` in `shpitdev/sketchi` (served as
+  `https://sketchi.app/skill.md`), whose tests keep it in step with the server.
+  Change it there first, then copy the body here.
+
 ## Validation
 
 Use `bun run check` before publishing changes. The check is intentionally small:
