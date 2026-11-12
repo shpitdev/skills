@@ -15,6 +15,7 @@ npx skills add shpitdev/skills --skill frontierclimb
 npx skills add shpitdev/skills --skill meshix
 npx skills add shpitdev/skills --skill slant4d-codemode
 npx skills add shpitdev/skills --skill slant4d-mcp
+npx skills add shpitdev/skills --skill sketchi
 ```
 
 For agents that read local Agent Skills directly, copy or install the folder
@@ -138,6 +139,15 @@ Plugin bundles are self-contained because Codex plugin archives reject skill and
 asset symlinks that point outside the plugin directory. The canonical skill
 source remains `skills/<name>`, and `bun run check` validates that bundled skill
 copies stay byte-for-byte in sync with the canonical source.
+
+## Sketchi
+
+[Sketchi](https://sketchi.app) draws flowcharts, architecture maps, ER, Gantt
+and eleven other kinds of diagram as editable Excalidraw scenes with a PNG,
+through its public MCP server at `https://playground.sketchi.app/mcp`. The
+server needs no account or key. The Claude Code and Codex plugins live in the
+[shpitdev/sketchi](https://github.com/shpitdev/sketchi) marketplace; this skill
+is the same text for any other harness.
 
 ## Meshix
 
