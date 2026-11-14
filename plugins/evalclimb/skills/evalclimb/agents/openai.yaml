@@ -1,0 +1,16 @@
+interface:
+  display_name: "EvalClimb"
+  short_description: "Optimize decision prompts from labeled examples"
+  icon_small: "./assets/logo.svg"
+  icon_large: "./assets/logo-large.png"
+  brand_color: "#2F5BD8"
+  default_prompt: "Use $evalclimb to optimize my app's decision prompt and integrate decide()."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "evalclimb"
+      description: "EvalClimb public decision optimization tools"
+      transport: "streamable_http"
+      url: "https://www.evalclimb.com/mcp"
+policy:
+  allow_implicit_invocation: true

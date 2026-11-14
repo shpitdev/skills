@@ -1,0 +1,38 @@
+{
+  "name": "evalclimb",
+  "version": "0.2.0",
+  "description": "Optimize an app's decision prompt from reviewed labeled examples with EvalClimb and integrate the generated decide() caller.",
+  "author": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "homepage": "https://www.evalclimb.com/connect",
+  "repository": "https://github.com/shpitdev/skills",
+  "license": "MIT",
+  "keywords": ["evalclimb", "decision-prompts", "prompt-optimization", "gepa", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "EvalClimb",
+    "shortDescription": "Optimize decision prompts from labeled examples",
+    "longDescription": "Optimize an app's decision prompt against reviewed labeled examples over text, images or PDFs, compare held-out scores and integrate the generated decide() caller. No sign-in; every upload and result is public, so your agent asks before uploading and again before publishing a run.",
+    "developerName": "SHPIT LLC",
+    "category": "Engineering",
+    "capabilities": [
+      "Decision prompt optimization",
+      "Labeled example review",
+      "Text, image and PDF inputs",
+      "Generated decide() code",
+      "Public run gallery"
+    ],
+    "websiteURL": "https://www.evalclimb.com",
+    "brandColor": "#2F5BD8",
+    "composerIcon": "./assets/logo-large.png",
+    "logo": "./assets/logo-large.png",
+    "defaultPrompt": [
+      "Optimize my app's decision prompt with EvalClimb.",
+      "Find a public EvalClimb run to reuse.",
+      "Replace my decision call with EvalClimb's generated decide()."
+    ]
+  }
+}

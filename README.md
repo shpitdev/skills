@@ -16,6 +16,7 @@ npx skills add shpitdev/skills --skill meshix
 npx skills add shpitdev/skills --skill slant4d-codemode
 npx skills add shpitdev/skills --skill slant4d-mcp
 npx skills add shpitdev/skills --skill sketchi
+npx skills add shpitdev/skills --skill evalclimb
 ```
 
 For agents that read local Agent Skills directly, copy or install the folder
@@ -59,6 +60,7 @@ codex plugin add meshix@shpitdev-skills
 codex plugin add tabex@shpitdev-skills
 codex plugin add slant4d-codemode@shpitdev-skills
 codex plugin add slant4d-mcp@shpitdev-skills
+codex plugin add evalclimb@shpitdev-skills
 codex mcp login meshix
 ```
 
@@ -70,9 +72,9 @@ codex plugin remove tabex@shpitdev-skills
 codex plugin add tabex@shpitdev-skills
 ```
 
-Repeat the remove/add pair for `meshix`, `slant4d-codemode`, or `slant4d-mcp`
-when their bundled plugin version changes. Meshix may need `codex mcp login
-meshix` after install because it registers an OAuth-backed MCP server. Do not
+Repeat the remove/add pair for `meshix`, `slant4d-codemode`, `slant4d-mcp`, or
+`evalclimb` when their bundled plugin version changes. Meshix may need `codex
+mcp login meshix` after install because it registers an OAuth-backed MCP server. Do not
 pass Meshix OAuth scopes manually; the live protected-resource metadata
 advertises the refresh-capable scopes. Slant4D API/Code Mode should register
 `slant4d-codemode`; it exposes Cloudflare Code Mode as two JavaScript APIs,
@@ -231,6 +233,28 @@ browser sessions, running page actions or JavaScript, and preserving browser
 evidence. The skill is tuned for real session checks, extension setup, targeted
 page actions, and capture workflows.
 
+## EvalClimb
+
+[EvalClimb](https://www.evalclimb.com) optimizes an app's decision prompt
+against reviewed labeled examples over text, images or PDFs, scores it on
+held-out examples and returns a generated `decide()` caller. The plugin
+registers the `evalclimb` MCP server at `https://www.evalclimb.com/mcp` and
+bundles the `evalclimb` skill. There is no sign-in or API key, and every upload
+and result is public.
+
+```sh
+codex plugin marketplace add shpitdev/skills
+codex plugin add evalclimb@shpitdev-skills
+claude plugin marketplace add shpitdev/skills
+claude plugin install evalclimb@shpitdev-skills
+pi install https://github.com/shpitdev/skills
+```
+
+Verify with `codex plugin list`, `claude plugin list` or `pi list`, then check
+the `evalclimb` server in `codex mcp list`, `claude mcp list` or Pi's `/mcp`.
+Register EvalClimb once per client: either the plugin or the direct MCP setup
+at [evalclimb.com/connect](https://www.evalclimb.com/connect).
+
 ## Repository Layout
 
 ```text
@@ -263,22 +287,3 @@ present. It does not generate or rewrite skills.
 - Include only what helps a new model use the public app or tool.
 - Prefer live product docs, MCP metadata, or CLI `--help` over copied schemas.
 - Remove old scaffolding when the approach changes.
-
-## dspy-decide
-
-Optimize decision-model requests from reviewed labeled examples using
-`https://www.evalclimb.com/mcp`. No sign-in is required; all data is public.
-
-```sh
-codex plugin marketplace add shpitdev/skills
-codex plugin add dspy-decide@shpitdev-skills
-claude plugin marketplace add shpitdev/skills
-claude plugin install dspy-decide@shpitdev-skills
-pi install https://github.com/shpitdev/skills
-```
-
-Pi 1.0+ loads the package's native MCP registration extension. For dspy-decide-only
-package filters, MCP-only setup, and verification, see
-[dspy-decide connection setup](https://www.evalclimb.com/connect). Use one registration
-per client. Restart after installation, verify eight tools, and browse the gallery.
-The plugin bundles only MCP configuration, not a skill; the server publishes the full workflow.

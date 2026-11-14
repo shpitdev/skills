@@ -46,6 +46,13 @@ skill as prompt tuning for a capable model with no private project context.
   `https://sketchi.app/skill.md`), whose tests keep it in step with the server.
   Change it there first, then copy the body here.
 
+- `evalclimb`: EvalClimb optimizes an app's decision prompt against reviewed
+  labeled examples at `https://www.evalclimb.com` through its public MCP server
+  and returns a generated `decide()` caller. The skill should cover supported
+  models and input types, the separate upload, proposal and publication
+  approvals, label review, and integrating the exported caller. The
+  `evalclimb` plugin bundles it with the MCP registration.
+
 ## Validation
 
 Use `bun run check` before publishing changes. The check is intentionally small:

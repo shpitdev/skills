@@ -19,14 +19,14 @@
       "homepage": "https://meshix.app/agents"
     },
     {
-      "name": "dspy-decide",
-      "description": "Optimize decision-model requests from reviewed labeled examples and integrate decide() code.",
+      "name": "evalclimb",
+      "description": "Optimize an app's decision prompt from reviewed labeled examples with EvalClimb and integrate the generated decide() caller.",
       "author": {
         "name": "SHPIT LLC",
         "url": "https://shpit.dev"
       },
       "category": "development",
-      "source": "./plugins/dspy-decide",
+      "source": "./plugins/evalclimb",
       "homepage": "https://www.evalclimb.com/connect"
     }
   ]

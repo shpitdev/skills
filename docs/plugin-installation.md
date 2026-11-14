@@ -41,8 +41,8 @@ for registered app mappings and supported manifests.
 ## Codex
 
 Codex plugins are published in this repo as `meshix@shpitdev-skills`,
-`tabex@shpitdev-skills`, `slant4d-codemode@shpitdev-skills`, and
-`slant4d-mcp@shpitdev-skills`.
+`tabex@shpitdev-skills`, `slant4d-codemode@shpitdev-skills`,
+`slant4d-mcp@shpitdev-skills`, and `evalclimb@shpitdev-skills`.
 
 ### Meshix
 
@@ -194,7 +194,7 @@ codex plugin remove slant4d-mcp@personal
 
 ## Claude Code
 
-Meshix and dspy-decide have Claude Code plugins in this repo.
+Meshix and EvalClimb have Claude Code plugins in this repo.
 Slant4D is available to Claude Code through MCP setup in the split Slant4D skill
 references instead of Claude plugins. `$slant4d-codemode` registers the
 `mcp-remote` stdio `slant4d-codemode` server for the Cloudflare Code Mode
@@ -294,25 +294,65 @@ Codex plugin packaging currently rejects skill and asset symlinks that point
 outside the plugin directory. Keep plugin bundles self-contained and let
 `bun run check` enforce that bundled skill files match `skills/<name>`.
 
-## dspy-decide
+## EvalClimb
 
-Install `dspy-decide@shpitdev-skills` with the Codex or Claude Code marketplace
-commands in [connection setup](https://www.evalclimb.com/connect). Pi 1.0+ uses the
-package's native MCP registration extension at `extensions/dspy-decide/index.js`.
-The plugin has no bundled skill; follow the MCP server's instructions and tool schemas.
-There is no OAuth step or API key. Do not put an edit token in HTTP headers.
-
-For PR validation, use the marketplace branch before installing the plugin:
+The `evalclimb` plugin registers the `evalclimb` HTTP MCP server at
+`https://www.evalclimb.com/mcp` and bundles the `evalclimb` skill. There is no
+OAuth step or API key. Every upload and result is public; the skill and server
+require separate consent before uploading and before publishing a run.
 
 ```sh
-codex plugin marketplace add shpitdev/skills --ref feat/dspy-decide-plugin
-claude plugin marketplace add shpitdev/skills@feat/dspy-decide-plugin --sparse .claude-plugin plugins
+codex plugin marketplace add shpitdev/skills
+codex plugin add evalclimb@shpitdev-skills
+claude plugin marketplace add shpitdev/skills
+claude plugin install evalclimb@shpitdev-skills
+pi install https://github.com/shpitdev/skills
 ```
 
-Validate the self-contained plugin and the complete marketplace:
+Verify the install:
+
+- Codex: `codex plugin list` shows `evalclimb@shpitdev-skills` as
+  `installed, enabled`; `codex mcp list` shows `evalclimb` as `enabled`.
+- Claude Code: `claude plugin list` shows `evalclimb@shpitdev-skills` as
+  `enabled`; `claude mcp list` shows `plugin:evalclimb:evalclimb` as
+  `Connected`.
+- Pi 1.0+: `pi list` shows the `shpitdev/skills` package. Its extension
+  registers `evalclimb` at session start, so check it with `/mcp` in a session;
+  `pi mcp list` shows only file-configured servers.
+
+Restart the agent after installing. Register EvalClimb once per client: the
+plugin or a direct MCP entry from [Connect](https://www.evalclimb.com/connect),
+not both. In Pi, a file-configured `evalclimb` server takes precedence over the
+extension's registration.
+
+### Replace dspy-decide
+
+The plugin was previously published as `dspy-decide@shpitdev-skills` with an
+MCP server named `dspy_decide`. That ID no longer exists in the marketplace.
+Remove it, then install `evalclimb`:
 
 ```sh
+codex plugin marketplace upgrade shpitdev-skills
+codex plugin remove dspy-decide@shpitdev-skills
+codex plugin add evalclimb@shpitdev-skills
+
+claude plugin marketplace update shpitdev-skills
+claude plugin uninstall dspy-decide@shpitdev-skills
+claude plugin install evalclimb@shpitdev-skills
+```
+
+In Pi, run `pi update --extensions`. If a package filter in Pi settings names
+`extensions/dspy-decide/index.js` or `skills/dspy-decide`, change those paths
+to `extensions/evalclimb/index.js` and `skills/evalclimb`. Remove any direct
+`dspy_decide` MCP entry (`codex mcp remove dspy_decide`, `claude mcp remove
+dspy_decide`) once the plugin is installed.
+
+### Validate a branch
+
+```sh
+codex plugin marketplace add shpitdev/skills --ref <branch>
+claude plugin marketplace add shpitdev/skills@<branch> --sparse .claude-plugin plugins
 bun run check
-claude plugin validate ./plugins/dspy-decide --strict
+claude plugin validate ./plugins/evalclimb --strict
 claude plugin validate . --strict
 ```

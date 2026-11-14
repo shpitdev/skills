@@ -1,20 +1,17 @@
 {
-  "name": "@dspy-decide/plugin",
-  "version": "0.1.0",
+  "name": "@shpitdev/evalclimb-plugin",
+  "version": "0.2.0",
   "private": true,
   "keywords": [
     "pi-package"
   ],
   "type": "module",
-  "nx": {
-    "name": "dspy-decide-plugin",
-    "tags": [
-      "scope:plugin"
-    ]
-  },
   "pi": {
     "extensions": [
       "./extensions/index.js"
+    ],
+    "skills": [
+      "./skills"
     ]
   }
 }
