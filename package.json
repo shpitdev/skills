@@ -15,7 +15,7 @@
   "pi": {
     "extensions": [
       "./extensions/meshix/index.ts",
-      "./extensions/dspy-decide/index.js"
+      "./extensions/evalclimb/index.js"
     ],
     "skills": [
       "./skills"

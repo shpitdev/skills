@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "dspy_decide": {
+    "evalclimb": {
       "type": "http",
       "url": "https://www.evalclimb.com/mcp"
     }

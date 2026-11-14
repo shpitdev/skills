@@ -1,0 +1,19 @@
+{
+  "name": "evalclimb",
+  "version": "0.2.0",
+  "description": "Optimize an app's decision prompt from reviewed labeled examples with EvalClimb and integrate the generated decide() caller.",
+  "author": {
+    "name": "SHPIT LLC",
+    "url": "https://shpit.dev"
+  },
+  "homepage": "https://www.evalclimb.com/connect",
+  "repository": "https://github.com/shpitdev/skills",
+  "license": "MIT",
+  "keywords": ["evalclimb", "decision-prompts", "prompt-optimization", "gepa", "mcp"],
+  "mcpServers": {
+    "evalclimb": {
+      "type": "http",
+      "url": "https://www.evalclimb.com/mcp"
+    }
+  }
+}
